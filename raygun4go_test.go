@@ -63,7 +63,7 @@ func TestClient(t *testing.T) {
 			c.context.Version = "goconvey"
 			c.context.Tags = []string{"golang", "test"}
 			c.context.CustomData = map[string]string{"foo": "bar"}
-			c.context.User = "Jakob Test"
+			c.context.User = "Test User"
 			defer c.HandleError()
 			panic("Test: See if this works with Raygun")
 		})
