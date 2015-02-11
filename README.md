@@ -1,4 +1,8 @@
 # raygun4go
+[![Build Status](https://travis-ci.org/kaeuferportal/raygun4go.svg?branch=master)](https://travis-ci.org/kaeuferportal/raygun4go)
+[![Coverage](http://gocover.io/_badge/github.com/kaeuferportal/raygun4go)](http://gocover.io/github.com/kaeuferportal/raygun4go)
+[![GoDoc](https://godoc.org/github.com/kaeuferportal/raygun4go?status.svg)](http://godoc.org/github.com/kaeuferportal/raygun4go)
+
 raygun4go adds Raygun-based error handling to your golang code. It catches all
 occuring errors, extracts as much information as possible and sends the error
 to Raygun via their REST-API.
