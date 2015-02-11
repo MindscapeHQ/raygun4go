@@ -3,15 +3,12 @@ version: "{build}"
 os: Windows Server 2012 R2
 
 environment:
+  GOPATH: c:\projects
   matrix:
   - GOARCH: 386
   - GOARCH: amd64
 
-
 clone_folder: c:\projects\src\github.com\kaeuferportal\raygun4go
-
-environment:
- GOPATH: c:\projects
 
 install:
  - set PATH=%GOPATH%\bin;%PATH%
