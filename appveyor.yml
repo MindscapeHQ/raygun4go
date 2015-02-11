@@ -1,0 +1,28 @@
+version: "{build}"
+
+os: Windows Server 2012 R2
+
+environment:
+  matrix:
+  - GOARCH: 386
+  - GOARCH: amd64
+
+
+clone_folder: c:\projects\src\github.com\kaeuferportal\raygun4go
+
+environment:
+ GOPATH: c:\projects
+
+install:
+ - set PATH=%GOPATH%\bin;%PATH%
+ - cd %APPVEYOR_BUILD_FOLDER%
+ - go version
+ - go get github.com/smartystreets/goconvey
+ - go get -v -t ./...
+
+build_script:
+ - go test -race -v ./...
+
+test: off
+
+deploy: off
