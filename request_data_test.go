@@ -16,6 +16,11 @@ func TestRequestData(t *testing.T) {
 		u := "http://www.example.com?foo=bar&fizz[]=buzz&fizz[]=buzz2"
 		r, _ := http.NewRequest("GET", u, nil)
 
+		Convey("empty if no request given", func() {
+			d := newRequestData(nil)
+			So(d, ShouldResemble, requestData{})
+		})
+
 		Convey("basic data", func() {
 			r.RemoteAddr = "1.2.3.4"
 
@@ -67,7 +72,7 @@ func TestRequestData(t *testing.T) {
 }
 
 func TestErrorData(t *testing.T) {
-	Convey("#NewRequestData", t, func() {
+	Convey("#NewErrorData", t, func() {
 		trace, _ := ioutil.ReadFile("_fixtures/stack_trace")
 		e := errors.New("test error")
 		stack := make(stackTrace, 0, 0)

@@ -19,6 +19,20 @@ func TestClient(t *testing.T) {
 		So(c.context.Request, ShouldBeNil)
 		So(c.context.Identifier(), ShouldHaveSameTypeAs, uuid.New())
 
+		Convey("#New", func() {
+			c, err := New("", "test")
+			So(c, ShouldEqual, nil)
+			So(err, ShouldNotEqual, nil)
+
+			c, err = New("test", "")
+			So(c, ShouldEqual, nil)
+			So(err, ShouldNotEqual, nil)
+
+			c, err = New("test", "test")
+			So(c, ShouldHaveSameTypeAs, &Client{})
+			So(err, ShouldEqual, nil)
+		})
+
 		Convey("#Request", func() {
 			r := &http.Request{}
 			c.Request(r)
