@@ -148,7 +148,7 @@ type context struct {
 }
 
 // UserCustomData is the interface that needs to be implemented by the custom
-// to be sent with the error. Being 'interface{}' suggests that it could be
-// anything, but the data itself of contained data should respond to
+// data to be sent with the error. Being 'interface{}' suggests that it could
+// be anything, but the data itself or contained data should respond to
 // json.Marshal() for the data to be transmitted.
 type UserCustomData interface{}
