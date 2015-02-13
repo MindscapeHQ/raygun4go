@@ -1,3 +1,40 @@
+// raygun4go adds Raygun-based error handling to your golang code.
+//
+// It basically adds an error-handler that recovers from all panics that
+// might occur and sends information about that error to Raygun. The amount
+// of data being sent is configurable.
+//
+// Basic example:
+//   raygun, err := raygun4go.New("appName", "apiKey")
+//   if err != nil {
+//     log.Println("Unable to create Raygun client:", err.Error())
+//   }
+//   defer raygun.HandleError()
+//
+// This will send the error message together with a stack trace to Raygun.
+//
+// However, raygun4go really starts to shine if used in a webserver context.
+// By calling
+//
+//   raygun.Request(*http.Request)
+//
+// you can set a request to be analyzed in case of an error. If an error
+// occurs, this will send the request details to Raygun, including
+//
+//   * hostname
+//   * url
+//   * http method
+//   * ip adress
+//   * url parameters
+//   * POSTed form fields
+//   * headers
+//   * cookies
+//
+// giving you a lot more leverage on your errors than the plain error message
+// could provide you with.
+//
+// Chainable configuration methods are available (see below) to set the
+// affected version, user, tags or custom data.
 package raygun4go
 
 import (

@@ -16,7 +16,7 @@ type postData struct {
 
 // newPostData triggers the creation of and returns a postData-struct. It needs
 // the configured context from the Client, the error and the corresponding
-// stacktrace.
+// stack trace.
 func newPostData(context contextInformation, err error, stack stackTrace) postData {
 	return postData{
 		OccuredOn: time.Now().Format("2006-01-02T15:04:05Z"),
@@ -39,7 +39,7 @@ type detailsData struct {
 }
 
 // newDetailsData returns a struct with all known details. It needs the context,
-// the error and the stacktrace.
+// the error and the stack trace.
 func newDetailsData(c contextInformation, err error, stack stackTrace) detailsData {
 	hostname, e := os.Hostname()
 	if e != nil {
@@ -62,7 +62,7 @@ func newDetailsData(c contextInformation, err error, stack stackTrace) detailsDa
 // errorData is the struct holding all technical information on the error.
 type errorData struct {
 	Message    string     `json:"message"`    // the actual message the error produced
-	StackTrace stackTrace `json:"stackTrace"` // the error's stacktrace
+	StackTrace stackTrace `json:"stackTrace"` // the error's stack trace
 }
 
 // newErrorData fills returns a struct with all the information known about the
@@ -82,7 +82,7 @@ func currentStack() stackTrace {
 	return s[3:]
 }
 
-// stackTraceElement is one element of the error's stacktrace. It is filled by
+// stackTraceElement is one element of the error's stack trace. It is filled by
 // stack2struct.
 type stackTraceElement struct {
 	LineNumber  int    `json:"lineNumber"`
@@ -147,4 +147,8 @@ type context struct {
 	Identifier string `json:"identifier"`
 }
 
+// UserCustomData is the interface that needs to be implemented by the custom
+// to be sent with the error. Being 'interface{}' suggests that it could be
+// anything, but the data itself of contained data should respond to
+// json.Marshal() for the data to be transmitted.
 type UserCustomData interface{}
