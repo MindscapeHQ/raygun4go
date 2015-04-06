@@ -28,7 +28,6 @@ clone_folder: c:\gopath\src\github.com\MindscapeHQ\raygun4go
 install:
   - set Path=c:\go\bin;%Path%
   - echo %Path%
-  - msiexec /x {FF5B30B2-08C2-11E1-85A2-6ACA4824019B} /q
   - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-%GOARCH%.msi
   - msiexec /i go%GOVERSION%.windows-%GOARCH%.msi /q
   - go version
