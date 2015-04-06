@@ -22,7 +22,7 @@ environment:
     GOVERSION: 1.4
 
 
-clone_folder: c:\gopath\src\github.com\kaeuferportal\raygun4go
+clone_folder: c:\gopath\src\github.com\MindscapeHQ\raygun4go
 
 # scripts that run after cloning repository
 install:
