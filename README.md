@@ -56,8 +56,7 @@ Method                    | Description
 ## Bugs and feature requests
 
 Have a bug or a feature request? Please first check the list of
-[issues](https://github.com/kaeuferportal/raygun4go/issues).
+[issues](https://github.com/MindscapeHQ/raygun4go/issues).
 
 If your problem or idea is not addressed yet, [please open a new
-issue](https://github.com/kaeuferportal/raygun4go/issues/new), or contact us at
-[oss@kaeuferportal.de](mailto:oss@kaeuferportal.de).
+issue](https://github.com/MindscapeHQ/raygun4go/issues/new).
