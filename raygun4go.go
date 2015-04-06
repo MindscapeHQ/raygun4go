@@ -178,7 +178,7 @@ func (c *Client) submit(post postData) {
 		fmt.Println(err.Error())
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == 202 {
 		log.Println("Successfully sent message to Raygun")
 	} else {
 		log.Println("Unexpected answer from Raygun:", resp.StatusCode)
