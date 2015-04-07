@@ -68,6 +68,9 @@ type contextInformation struct {
 	identifier string        // a unique identifier for the running process, automatically set by New()
 }
 
+// raygunAPIEndpoint  holds the REST - JSON API Endpoint address
+var raygunEndpoint = "https://api.raygun.io"
+
 // Identifier returns the otherwise private identifier property from the
 // Client's context. It is set by the New()-method and represents a unique
 // identifier for your running program.
@@ -151,6 +154,13 @@ func (c *Client) createPost(err error, stack stackTrace) postData {
 	return newPostData(c.context, err, stack)
 }
 
+// CreateError is a simple wrapper to manually post messages (errors) to raygun
+func (c *Client) CreateError(message string) {
+	err := errors.New(message)
+	post := c.createPost(err, currentStack())
+	c.submit(post)
+}
+
 // submit takes care of actually sending the error to Raygun unless the silent
 // option is set.
 func (c *Client) submit(post postData) {
@@ -166,7 +176,7 @@ func (c *Client) submit(post postData) {
 		return
 	}
 
-	r, err := http.NewRequest("POST", "https://api.raygun.io/entries", bytes.NewBuffer(json))
+	r, err := http.NewRequest("POST", raygunEndpoint+"/entries", bytes.NewBuffer(json))
 	if err != nil {
 		log.Printf("Unable to create request (%s)\n", err.Error())
 		return

@@ -1,7 +1,9 @@
 package raygun4go
 
 import (
+	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
@@ -73,7 +75,7 @@ func TestClient(t *testing.T) {
 			}
 			r.Header.Add("Cookie", "cookie1=value1; cookie2=value2")
 			c.Request(r)
-			c.apiKey = "m/R9wT5Y4L9v4xj0aVAe8g=="
+			c.apiKey = "key"
 			c.context.Version = "goconvey"
 			c.context.Tags = []string{"golang", "test"}
 			c.context.CustomData = map[string]string{"foo": "bar"}
@@ -81,5 +83,37 @@ func TestClient(t *testing.T) {
 			defer c.HandleError()
 			panic("Test: See if this works with Raygun")
 		})
+
+		Convey("#CreateError", func() {
+			ts := raygunEndpointStub()
+			defer ts.Close()
+			raygunEndpoint = ts.URL
+			c, _ := New("app", "key")
+			c.Silent(false)
+			c.apiKey = "key"
+			c.CreateError("Test: See if this works with Raygun")
+		})
 	})
+}
+
+func raygunEndpointStub() *httptest.Server {
+	return httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+
+			if req.Method != "POST" || req.RequestURI != "/entries" {
+				fmt.Println("raygunEndpointStub: URI not implemented")
+				http.Error(w, "Not Found", http.StatusNotFound)
+				return
+			}
+
+			// 403 Invalid API Key
+			// The value specified in the header X-ApiKey did not match with a user.
+			if req.Header.Get("X-ApiKey") == "" {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+			// 202 OK - Message accepted.
+			w.WriteHeader(http.StatusAccepted)
+		}))
 }
