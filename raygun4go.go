@@ -175,7 +175,7 @@ func (c *Client) submit(post postData) {
 	httpClient := http.Client{}
 	resp, err := httpClient.Do(r)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 202 {
