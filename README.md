@@ -1,7 +1,7 @@
 # raygun4go
 [![Build Status](https://travis-ci.org/MindscapeHQ/raygun4go.svg?branch=master)](https://travis-ci.org/MindscapeHQ/raygun4go)
 [![Build status](https://ci.appveyor.com/api/projects/status/9pqk769jaxfxp0bb/branch/master?svg=true)](https://ci.appveyor.com/project/kaeuferportal-oss/raygun4go/branch/master)
-[![Coverage](http://gocover.io/_badge/github.com/kaeuferportal/raygun4go)](http://gocover.io/github.com/kaeuferportal/raygun4go)
+[![Coverage](http://gocover.io/_badge/github.com/MindscapeHQ/raygun4go)](http://gocover.io/github.com/MindscapeHQ/raygun4go)
 [![GoDoc](https://godoc.org/github.com/MindscapeHQ/raygun4go?status.svg)](http://godoc.org/github.com/MindscapeHQ/raygun4go)
 
 raygun4go adds Raygun-based error handling to your golang code. It catches all
