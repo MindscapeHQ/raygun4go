@@ -55,7 +55,7 @@ func newDetailsData(c contextInformation, err error, stack stackTrace) detailsDa
 		Request:        newRequestData(c.Request),
 		User:           user{c.User},
 		Context:        context{c.Identifier()},
-		Client:         clientData{"raygun4go", packageVersion, "https://github.com/kaeuferportal/raygun4go"},
+		Client:         clientData{"raygun4go", packageVersion, "https://github.com/MindscapeHQ/raygun4go"},
 	}
 }
 
