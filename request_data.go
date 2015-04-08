@@ -102,9 +102,9 @@ func (s *stackTrace) AddEntry(lineNumber int, packageName, fileName, methodName 
 // requestData holds all information on the request from the context
 type requestData struct {
 	HostName    string            `json:"hostName"`
-	Url         string            `json:"url"`
-	HttpMethod  string            `json:"httpMethod"`
-	IpAddress   string            `json:"ipAddress"`
+	URL         string            `json:"url"`
+	HTTPMethod  string            `json:"httpMethod"`
+	IPAddress   string            `json:"ipAddress"`
 	QueryString map[string]string `json:"queryString"` // key-value-pairs from the URI parameters
 	Form        map[string]string `json:"form"`        // key-value-pairs from a given form (POST)
 	Headers     map[string]string `json:"headers"`     // key-value-pairs from the header
@@ -121,9 +121,9 @@ func newRequestData(r *http.Request) requestData {
 
 	return requestData{
 		HostName:    r.Host,
-		Url:         r.URL.String(),
-		HttpMethod:  r.Method,
-		IpAddress:   r.RemoteAddr,
+		URL:         r.URL.String(),
+		HTTPMethod:  r.Method,
+		IPAddress:   r.RemoteAddr,
 		QueryString: arrayMapToStringMap(r.URL.Query()),
 		Form:        arrayMapToStringMap(r.PostForm),
 		Headers:     arrayMapToStringMap(r.Header),
@@ -134,7 +134,7 @@ func newRequestData(r *http.Request) requestData {
 type clientData struct {
 	Name      string `json:"identifier"`
 	Version   string `json:"version"`
-	ClientUrl string `json:"clientUrl"`
+	ClientURL string `json:"clientUrl"`
 }
 
 // user holds information on the affected user.

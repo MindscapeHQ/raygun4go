@@ -1,4 +1,4 @@
-// raygun4go adds Raygun-based error handling to your golang code.
+// Package raygun4go adds Raygun-based error handling to your golang code.
 //
 // It basically adds an error-handler that recovers from all panics that
 // might occur and sends information about that error to Raygun. The amount

@@ -26,9 +26,9 @@ func TestRequestData(t *testing.T) {
 
 			d := newRequestData(r)
 			So(d.HostName, ShouldEqual, "www.example.com")
-			So(d.Url, ShouldEqual, u)
-			So(d.HttpMethod, ShouldEqual, "GET")
-			So(d.IpAddress, ShouldResemble, "1.2.3.4")
+			So(d.URL, ShouldEqual, u)
+			So(d.HTTPMethod, ShouldEqual, "GET")
+			So(d.IPAddress, ShouldResemble, "1.2.3.4")
 		})
 
 		Convey("Form", func() {
