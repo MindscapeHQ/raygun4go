@@ -1,13 +1,13 @@
 package raygun4go
 
 import (
+	"appengine/aetest"
+	"code.google.com/p/go-uuid/uuid"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
-
-	"code.google.com/p/go-uuid/uuid"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -92,6 +92,23 @@ func TestClient(t *testing.T) {
 			c.Silent(false)
 			c.apiKey = "key"
 			c.CreateError("Test: See if this works with Raygun")
+
+		})
+
+		Convey("#CreateErrorAppEngine", func() {
+			ctx, err := aetest.NewContext(nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer ctx.Close()
+			ts := raygunEndpointStub()
+			defer ts.Close()
+			raygunEndpoint = ts.URL
+			c, _ := New("app", "key")
+			c.Silent(false)
+			c.apiKey = "key"
+			c.CreateError("Test: See if this works with Raygun App Engine", ctx)
+
 		})
 	})
 }

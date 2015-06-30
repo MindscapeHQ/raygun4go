@@ -39,13 +39,14 @@ package raygun4go
 
 import (
 	"bytes"
+	"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
 	"errors"
 	"fmt"
+	gcontext "golang.org/x/net/context" //google context
+	"google.golang.org/appengine/urlfetch"
 	"log"
 	"net/http"
-
-	"code.google.com/p/go-uuid/uuid"
 )
 
 // Client is the struct holding your Raygun configuration and context
@@ -78,7 +79,7 @@ func (ci *contextInformation) Identifier() string {
 	return ci.identifier
 }
 
-// New creates and returns a Client, needing an appName and an apiKey. It also
+// New creates and. returns a Client, needing an appName and an apiKey. It also
 // creates a unique identifier for you program.
 func New(appName, apiKey string) (c *Client, err error) {
 	context := contextInformation{identifier: uuid.New()}
@@ -135,7 +136,7 @@ func (c *Client) User(u string) *Client {
 //   defer c.HandleError()
 //
 // to handle all panics inside the calling function and all calls made from it.
-// Be sure to call this in your main function or (if it is webserver) in your
+// Be sure to call .this in your main function or (if it is webserver) in your
 // request handler as soon as possible.
 func (c *Client) HandleError() {
 	if e := recover(); e != nil {
@@ -155,15 +156,28 @@ func (c *Client) createPost(err error, stack stackTrace) postData {
 }
 
 // CreateError is a simple wrapper to manually post messages (errors) to raygun
-func (c *Client) CreateError(message string) {
+func (c *Client) CreateError(message string, ctx ...interface{}) {
 	err := errors.New(message)
 	post := c.createPost(err, currentStack())
-	c.submit(post)
+
+	if len(ctx) > 0 {
+		switch v := ctx[0].(type) {
+		case gcontext.Context:
+			c.submitAppEngine(post, v)
+		default:
+			c.submit(post)
+		}
+	} else {
+		c.submit(post)
+
+	}
+
 }
 
 // submit takes care of actually sending the error to Raygun unless the silent
 // option is set.
 func (c *Client) submit(post postData) {
+
 	if c.silent {
 		enc, _ := json.MarshalIndent(post, "", "\t")
 		fmt.Println(string(enc))
@@ -175,7 +189,6 @@ func (c *Client) submit(post postData) {
 		log.Printf("Unable to convert to JSON (%s): %#v\n", err.Error(), post)
 		return
 	}
-
 	r, err := http.NewRequest("POST", raygunEndpoint+"/entries", bytes.NewBuffer(json))
 	if err != nil {
 		log.Printf("Unable to create request (%s)\n", err.Error())
@@ -184,6 +197,39 @@ func (c *Client) submit(post postData) {
 	r.Header.Add("X-ApiKey", c.apiKey)
 	httpClient := http.Client{}
 	resp, err := httpClient.Do(r)
+	if err != nil {
+		log.Println(err.Error())
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode == 202 {
+		log.Println("Successfully sent message to Raygun")
+	} else {
+		log.Println("Unexpected answer from Raygun:", resp.StatusCode)
+	}
+}
+
+// submit takes care of actually sending the error to Raygun unless the silent
+// option is set , in this method we use url fetch instad of http.Client
+func (c *Client) submitAppEngine(post postData, ctx gcontext.Context) {
+	if c.silent {
+		enc, _ := json.MarshalIndent(post, "", "\t")
+		fmt.Println(string(enc))
+		return
+	}
+
+	json, err := json.Marshal(post)
+	if err != nil {
+		log.Printf("Unable to convert to JSON (%s): %#v\n", err.Error(), post)
+		return
+	}
+	client := urlfetch.Client(ctx)
+	r, err := http.NewRequest("POST", raygunEndpoint+"/entries", bytes.NewBuffer(json))
+	if err != nil {
+		log.Printf("Unable to create request (%s)\n", err.Error())
+		return
+	}
+	r.Header.Add("X-ApiKey", c.apiKey)
+	resp, err := client.Do(r)
 	if err != nil {
 		log.Println(err.Error())
 	}
