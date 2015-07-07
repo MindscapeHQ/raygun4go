@@ -42,6 +42,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 
 	"code.google.com/p/go-uuid/uuid"
@@ -50,10 +51,11 @@ import (
 // Client is the struct holding your Raygun configuration and context
 // information that is needed if an error occurs.
 type Client struct {
-	appName string             // the name of the app
-	apiKey  string             // the api key for your raygun app
-	context contextInformation // optional context information
-	silent  bool               // if true, the error is printed instead of sent to Raygun
+	appName     string             // the name of the app
+	apiKey      string             // the api key for your raygun app
+	context     contextInformation // optional context information
+	silent      bool               // if true, the error is printed instead of sent to Raygun
+	logToStdOut bool
 }
 
 // contextInformation holds optional information on the context the error
@@ -84,7 +86,7 @@ func New(appName, apiKey string) (c *Client, err error) {
 	if appName == "" || apiKey == "" {
 		return nil, errors.New("appName and apiKey are required")
 	}
-	c = &Client{appName, apiKey, context, false}
+	c = &Client{appName, apiKey, context, false, false}
 	return c, nil
 }
 
@@ -92,6 +94,14 @@ func New(appName, apiKey string) (c *Client, err error) {
 // sent to Raygun but printed instead.
 func (c *Client) Silent(s bool) *Client {
 	c.silent = s
+	return c
+}
+
+// LogToStdOut sets the logToStdOut-property on the Client.  If true, errors will
+// be printed to std out as they are submitted to raygun.  This will also log
+// any errors that occur when submiting to raygun to std out
+func (c *Client) LogToStdOut(l bool) *Client {
+	c.logToStdOut = l
 	return c
 }
 
@@ -146,8 +156,18 @@ func (c *Client) HandleError() error {
 	if !ok {
 		err = errors.New(e.(string))
 	}
+
+	if c.logToStdOut {
+		log.Println("Recovering from:", err.Error())
+	}
+
 	post := c.createPost(err, currentStack())
-	return c.submit(post)
+	err = c.submit(post)
+
+	if c.logToStdOut && err != nil {
+		log.Println(err.Error())
+	}
+	return err
 }
 
 // createPost creates the data structure that will be sent to Raygun.
@@ -188,13 +208,16 @@ func (c *Client) submit(post postData) error {
 
 	defer resp.Body.Close()
 	if resp.StatusCode == 202 {
+		if c.logToStdOut {
+			log.Println("Successfully sent message to Raygun")
+		}
 		return nil
 	}
 
 	errMsg := fmt.Sprintf("Unexpected answer from Raygun %d", resp.StatusCode)
 	if err != nil {
 		errMsg = fmt.Sprintf("%s: %s", errMsg, err.Error())
-
 	}
+
 	return errors.New(errMsg)
 }
