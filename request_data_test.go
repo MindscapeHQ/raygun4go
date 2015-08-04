@@ -57,8 +57,9 @@ func TestRequestData(t *testing.T) {
 
 		Convey("Headers", func() {
 			r.Header = map[string][]string{
-				"foo":  {"bar"},
-				"fizz": {"buzz"},
+				"foo":           {"bar"},
+				"Authorization": {"Bearer usersecret"},
+				"fizz":          {"buzz"},
 			}
 			expected := map[string]string{
 				"foo":  "bar",

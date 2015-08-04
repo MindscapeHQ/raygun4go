@@ -119,6 +119,9 @@ func newRequestData(r *http.Request) requestData {
 
 	r.ParseForm()
 
+	headers := arrayMapToStringMap(r.Header)
+	delete(headers, "Authorization")
+
 	return requestData{
 		HostName:    r.Host,
 		URL:         r.URL.String(),
@@ -126,7 +129,7 @@ func newRequestData(r *http.Request) requestData {
 		IPAddress:   r.RemoteAddr,
 		QueryString: arrayMapToStringMap(r.URL.Query()),
 		Form:        arrayMapToStringMap(r.PostForm),
-		Headers:     arrayMapToStringMap(r.Header),
+		Headers:     headers,
 	}
 }
 
