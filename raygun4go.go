@@ -39,14 +39,15 @@ package raygun4go
 
 import (
 	"bytes"
-	"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
 	"errors"
 	"fmt"
-	gcontext "golang.org/x/net/context" //google context
-	"google.golang.org/appengine/urlfetch"
 	"log"
 	"net/http"
+
+	"code.google.com/p/go-uuid/uuid"
+	gcontext "golang.org/x/net/context" //google context
+	"google.golang.org/appengine/urlfetch"
 )
 
 // Client is the struct holding your Raygun configuration and context
@@ -138,7 +139,7 @@ func (c *Client) User(u string) *Client {
 // to handle all panics inside the calling function and all calls made from it.
 // Be sure to call .this in your main function or (if it is webserver) in your
 // request handler as soon as possible.
-func (c *Client) HandleError() {
+func (c *Client) HandleError(ctx gcontext.Context) {
 	if e := recover(); e != nil {
 		err, ok := e.(error)
 		if !ok {
@@ -146,7 +147,8 @@ func (c *Client) HandleError() {
 		}
 		log.Println("Recovering from:", err.Error())
 		post := c.createPost(err, currentStack())
-		c.submit(post)
+
+		c.submitAppEngine(post, ctx)
 	}
 }
 
