@@ -1,15 +1,16 @@
 package raygun4go
 
 import (
-	"appengine/aetest"
 	"code.google.com/p/go-uuid/uuid"
 	"fmt"
+
+	"appengine/aetest"
+	. "github.com/smartystreets/goconvey/convey"
+	"google.golang.org/appengine"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
-
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestClient(t *testing.T) {
@@ -66,8 +67,10 @@ func TestClient(t *testing.T) {
 		})
 
 		Convey("#HandleError", func() {
-			u := "http://www.example.com?foo=bar&fizz[]=buzz&fizz[]=buzz2"
-			r, _ := http.NewRequest("GET", u, nil)
+			inst, _ := aetest.NewInstance(&aetest.Options{StronglyConsistentDatastore: false})
+			r, _ := inst.NewRequest("GET", "/", nil)
+
+			ctx := appengine.NewContext(r)
 			r.RemoteAddr = "1.2.3.4"
 			r.PostForm = url.Values{
 				"foo":  []string{"bar"},
@@ -80,37 +83,26 @@ func TestClient(t *testing.T) {
 			c.context.Tags = []string{"golang", "test"}
 			c.context.CustomData = map[string]string{"foo": "bar"}
 			c.context.User = "Test User"
-			defer c.HandleError()
+			defer c.HandleError(ctx)
 			panic("Test: See if this works with Raygun")
 		})
 
 		Convey("#CreateError", func() {
+			inst, _ := aetest.NewInstance(&aetest.Options{StronglyConsistentDatastore: false})
+			r, _ := inst.NewRequest("GET", "/", nil)
+			ctx := appengine.NewContext(r)
 			ts := raygunEndpointStub()
 			defer ts.Close()
 			raygunEndpoint = ts.URL
 			c, _ := New("app", "key")
 			c.Silent(false)
 			c.apiKey = "key"
-			c.CreateError("Test: See if this works with Raygun")
+			c.CreateError("Test: See if this works with Raygun", ctx)
 
 		})
 
-		Convey("#CreateErrorAppEngine", func() {
-			ctx, err := aetest.NewContext(nil)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer ctx.Close()
-			ts := raygunEndpointStub()
-			defer ts.Close()
-			raygunEndpoint = ts.URL
-			c, _ := New("app", "key")
-			c.Silent(false)
-			c.apiKey = "key"
-			c.CreateError("Test: See if this works with Raygun App Engine", ctx)
-
-		})
 	})
+
 }
 
 func raygunEndpointStub() *httptest.Server {

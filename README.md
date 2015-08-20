@@ -1,9 +1,10 @@
-# raygun4go
-[![Build Status](https://travis-ci.org/MindscapeHQ/raygun4go.svg?branch=master)](https://travis-ci.org/MindscapeHQ/raygun4go)
+# raygun4goGAE
+[![Build Status](https://travis-ci.org/miko-code/raygun4goGAE.svg?branch=master)](https://travis-ci.org/miko-code/raygun4goGAE)
 [![Build status](https://ci.appveyor.com/api/projects/status/9pqk769jaxfxp0bb/branch/master?svg=true)](https://ci.appveyor.com/project/kaeuferportal-oss/raygun4go/branch/master)
-[![Coverage](http://gocover.io/_badge/github.com/MindscapeHQ/raygun4go)](http://gocover.io/github.com/MindscapeHQ/raygun4go)
-[![GoDoc](https://godoc.org/github.com/MindscapeHQ/raygun4go?status.svg)](http://godoc.org/github.com/MindscapeHQ/raygun4go)
-[![GoReportcard](http://goreportcard.com/badge/MindscapeHQ/raygun4go)](http://goreportcard.com/report/MindscapeHQ/raygun4go)
+[![Coverage](http://gocover.io/_badge/github.com/miko-code/raygun4goGAE)](http://gocover.io/github.com/miko-code/raygun4goGAE)
+[![GoDoc](https://godoc.org/github.com/miko-code/raygun4goGAE?status.svg)](http://godoc.org/github.com/miko-code/raygun4goGAE)
+[![GoReportcard](http://goreportcard.com/badge/miko-code/raygun4goGAE)](http://goreportcard.com/report/miko-code/raygun4goGAE)
+
 
 raygun4go adds Raygun-based error handling to your golang code. It catches all
 occuring errors, extracts as much information as possible and sends the error
@@ -13,7 +14,7 @@ to Raygun via their REST-API.
 
 ### Installation
 ```
-  $ go get github.com/MindscapeHQ/raygun4go
+  $ go get github.com/miko-code/raygun4goGAE
 ```
 
 ### Basic Usage
@@ -23,13 +24,21 @@ in a context as global as possible. In webservers, this will probably be your
 request handling method, in all other programs it should be your main-method.
 Having found the right spot, just add the following example code:
 
+
 ```
+//generate new appengine context
+ctx := appengine.NewContext(r)
+
 raygun, err := raygun4go.New("appName", "apiKey")
 if err != nil {
   log.Println("Unable to create Raygun client:", err.Error())
 }
 raygun.Silent(true)
-defer raygun.HandleError()
+defer raygun.HandleError(ctx)
+
+raygun.CreateError("this is error", ctx)
+
+
 ```
 
 where ``appName`` is the name of your app and ``apiKey`` is your
@@ -57,7 +66,7 @@ Method                    | Description
 ## Bugs and feature requests
 
 Have a bug or a feature request? Please first check the list of
-[issues](https://github.com/MindscapeHQ/raygun4go/issues).
+[issues](https://github.com/miko-code/raygun4goGAE/issues).
 
 If your problem or idea is not addressed yet, [please open a new
-issue](https://github.com/MindscapeHQ/raygun4go/issues/new).
+issue](https://github.com/miko-code/raygun4goGAE/issues/new).
