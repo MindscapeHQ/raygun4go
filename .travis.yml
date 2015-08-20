@@ -19,7 +19,3 @@ install:
   - go get code.google.com/p/go-uuid/uuid
   - go get github.com/kaeuferportal/stack2struct
   
-  
-script:
-    - ./go_appengine/goapp test ./tests;
-    - ./go_appengine/goapp build ./noughtscrosses;
