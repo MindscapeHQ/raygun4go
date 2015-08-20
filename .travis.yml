@@ -18,5 +18,5 @@ install:
   - go get github.com/smartystreets/goconvey
   - go get code.google.com/p/go-uuid/uuid
   - go get github.com/kaeuferportal/stack2struct
-  - go get google.golang.org/appengine
+
   
