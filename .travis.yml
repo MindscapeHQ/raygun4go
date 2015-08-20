@@ -15,4 +15,4 @@ install:
   - go get code.google.com/p/go-uuid/uuid
   - go get github.com/kaeuferportal/stack2struct
   - go get google.golang.org/appengine
-  - go get appengine/aetest
+  
