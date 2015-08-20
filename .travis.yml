@@ -11,11 +11,15 @@ matrix:
   allow_failures:
     - go: tip
 install:
-  - curl -sSo gae_sdk.zip https://storage.googleapis.com/appengine-sdks/featured/go_appengine_sdk_linux_amd64-1.9.24.zip
-  - unzip -q gae_sdk.zip
-  - go get -v -t -d google.golang.org/appengine/...
+  - export FILE=go_appengine_sdk_linux_amd64-$(curl https://appengine.google.com/api/updatecheck | grep release | grep -o '[0-9\.]*').zip
+  - curl -O https://storage.googleapis.com/appengine-sdks/featured/$FILE
+  - unzip -q $FILE
+
   - go get github.com/smartystreets/goconvey
   - go get code.google.com/p/go-uuid/uuid
   - go get github.com/kaeuferportal/stack2struct
   
   
+script:
+    - ./go_appengine/goapp test ./tests;
+    - ./go_appengine/goapp build ./noughtscrosses;
