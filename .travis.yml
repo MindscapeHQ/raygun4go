@@ -22,4 +22,6 @@ install:
   - go get google.golang.org/appengine/urlfetch
   - go get google.golang.org/appengine
 
+script:
+- go test github.com/miko-code/raygun4goGAE/...
   
