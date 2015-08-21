@@ -19,4 +19,6 @@ install:
   - go get code.google.com/p/go-uuid/uuid
   - go get github.com/kaeuferportal/stack2struct
   - go get golang.org/x/net/context
+  - go get google.golang.org/appengine/urlfetch
+
   
