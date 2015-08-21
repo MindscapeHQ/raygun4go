@@ -20,5 +20,6 @@ install:
   - go get github.com/kaeuferportal/stack2struct
   - go get golang.org/x/net/context
   - go get google.golang.org/appengine/urlfetch
+  - go get google.golang.org/appengine
 
   
