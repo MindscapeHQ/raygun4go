@@ -45,7 +45,7 @@ import (
 	"log"
 	"net/http"
 
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/pborman/uuid"
 )
 
 // Client is the struct holding your Raygun configuration and context
