@@ -19,7 +19,7 @@ type postData struct {
 // stack trace.
 func newPostData(context contextInformation, err error, stack stackTrace) postData {
 	return postData{
-		OccuredOn: time.Now().Format("2006-01-02T15:04:05Z"),
+		OccuredOn: time.Now().UTC().Format("2006-01-02T15:04:05Z"),
 		Details:   newDetailsData(context, err, stack),
 	}
 }
