@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"testing"
 
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/pborman/uuid"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
