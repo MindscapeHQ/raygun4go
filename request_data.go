@@ -15,12 +15,11 @@ type postData struct {
 }
 
 // newPostData triggers the creation of and returns a postData-struct. It needs
-// the configured context from the Client, the error and the corresponding
-// stack trace.
-func newPostData(context contextInformation, err error, stack stackTrace) postData {
+// the error entry and the corresponding stack trace.
+func newPostData(e *ErrorEntry, stack stackTrace) postData {
 	return postData{
 		OccuredOn: time.Now().UTC().Format("2006-01-02T15:04:05Z"),
-		Details:   newDetailsData(context, err, stack),
+		Details:   newDetailsData(e, stack),
 	}
 }
 
@@ -40,22 +39,22 @@ type detailsData struct {
 
 // newDetailsData returns a struct with all known details. It needs the context,
 // the error and the stack trace.
-func newDetailsData(c contextInformation, err error, stack stackTrace) detailsData {
-	hostname, e := os.Hostname()
-	if e != nil {
+func newDetailsData(e *ErrorEntry, stack stackTrace) detailsData {
+	hostname, err := os.Hostname()
+	if err != nil {
 		hostname = "not available"
 	}
 
 	return detailsData{
 		MachineName:    hostname,
-		Version:        c.Version,
-		Error:          newErrorData(err, stack),
-		Tags:           c.Tags,
-		UserCustomData: c.CustomData,
-		Request:        newRequestData(c.Request),
-		User:           user{c.User},
-		Context:        context{c.Identifier()},
-		Client:         clientData{"raygun4go", packageVersion, "https://github.com/MindscapeHQ/raygun4go"},
+		Version:        e.version,
+		Error:          newErrorData(e.err, stack),
+		Tags:           e.tags,
+		UserCustomData: e.customData,
+		Request:        newRequestData(e.request),
+		User:           user{e.user},
+		Context:        context{e.identifier},
+		Client:         clientData{"raygun4go", packageVersion, "https://github.com/gsblue/raygun4go"},
 	}
 }
 

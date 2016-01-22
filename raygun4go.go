@@ -51,22 +51,29 @@ import (
 // Client is the struct holding your Raygun configuration and context
 // information that is needed if an error occurs.
 type Client struct {
-	appName     string             // the name of the app
-	apiKey      string             // the api key for your raygun app
-	context     contextInformation // optional context information
-	silent      bool               // if true, the error is printed instead of sent to Raygun
+	appName     string              // the name of the app
+	apiKey      string              // the api key for your raygun app
+	context     *contextInformation // optional context information
+	silent      bool                // if true, the error is printed instead of sent to Raygun
 	logToStdOut bool
 }
 
 // contextInformation holds optional information on the context the error
 // occured in.
 type contextInformation struct {
-	Request    *http.Request // the request associated to the error
-	Version    string        // the version of the package
-	Tags       []string      // tags that you would like to use to filter this error
-	CustomData interface{}   // whatever you like Raygun to know about this error
-	User       string        // the user that saw the error
+	Version     string   // the version of the app
+	DefaultTags []string // default tags that you would like to use to filter all the errors e.g. Production
+	identifier  string   // a unique identifier for the running process, automatically set by New()
+}
+
+type ErrorEntry struct {
+	request    *http.Request // the request associated to the error
+	tags       []string      // tags that you would like to use to filter this error
+	customData interface{}   // whatever you like Raygun to know about this error
+	user       string        // the user that saw the error
+	version    string        // the version of the app
 	identifier string        // a unique identifier for the running process, automatically set by New()
+	err        error
 }
 
 // raygunAPIEndpoint  holds the REST - JSON API Endpoint address
@@ -79,10 +86,10 @@ func (ci *contextInformation) Identifier() string {
 	return ci.identifier
 }
 
-// New creates and returns a Client, needing an appName and an apiKey. It also
+// New creates and returns a Client, needing an appName, appVersion and an apiKey. It also
 // creates a unique identifier for you program.
-func New(appName, apiKey string) (c *Client, err error) {
-	context := contextInformation{identifier: uuid.New()}
+func New(apiKey, appName, appVersion string, defaultTags []string) (c *Client, err error) {
+	context := &contextInformation{identifier: uuid.New(), Version: appVersion, DefaultTags: defaultTags}
 	if appName == "" || apiKey == "" {
 		return nil, errors.New("appName and apiKey are required")
 	}
@@ -105,38 +112,46 @@ func (c *Client) LogToStdOut(l bool) *Client {
 	return c
 }
 
-// Request is a chainable option-setting method to add a request to the context.
-func (c *Client) Request(r *http.Request) *Client {
-	c.context.Request = r
-	return c
+func (c *Client) CreateErrorEntryFromMsg(msg string) *ErrorEntry {
+	return c.CreateErrorEntry(errors.New(msg))
 }
 
-// Version is a chainable option-setting method to add a version to the context.
-func (c *Client) Version(v string) *Client {
-	c.context.Version = v
-	return c
+func (c *Client) CreateErrorEntry(err error) *ErrorEntry {
+	entry := &ErrorEntry{
+		err:        err,
+		version:    c.context.Version,
+		identifier: c.context.identifier,
+	}
+	entry.tags = append(entry.tags, c.context.DefaultTags...)
+	return entry
 }
 
-// Tags is a chainable option-setting method to add tags to the context. You
+// Request is a chainable option-setting method to add a request to the entry.
+func (e *ErrorEntry) Request(r *http.Request) *ErrorEntry {
+	e.request = r
+	return e
+}
+
+// AppendTags is a chainable option-setting method to append tags to the entry. You
 // can use tags to filter errors in Raygun.
-func (c *Client) Tags(tags []string) *Client {
-	c.context.Tags = tags
-	return c
+func (e *ErrorEntry) AppendTags(tags []string) *ErrorEntry {
+	e.tags = append(e.tags, tags...)
+	return e
 }
 
 // CustomData is a chainable option-setting method to add arbitrary custom data
-// to the context. Note that the given type (or at least parts of it)
+// to the entry. Note that the given type (or at least parts of it)
 // must implement the Marshaler-interface for this to work.
-func (c *Client) CustomData(data interface{}) *Client {
-	c.context.CustomData = data
-	return c
+func (e *ErrorEntry) CustomData(data interface{}) *ErrorEntry {
+	e.customData = data
+	return e
 }
 
 // User is a chainable option-setting method to add an affected Username to the
-// context.
-func (c *Client) User(u string) *Client {
-	c.context.User = u
-	return c
+// entry.
+func (e *ErrorEntry) User(u string) *ErrorEntry {
+	e.user = u
+	return e
 }
 
 // HandleError sets up the error handling code. It needs to be called with
@@ -161,7 +176,7 @@ func (c *Client) HandleError() error {
 		log.Println("Recovering from:", err.Error())
 	}
 
-	post := c.createPost(err, currentStack())
+	post := newPostData(c.CreateErrorEntry(err), currentStack())
 	err = c.submit(post)
 
 	if c.logToStdOut && err != nil {
@@ -170,15 +185,9 @@ func (c *Client) HandleError() error {
 	return err
 }
 
-// createPost creates the data structure that will be sent to Raygun.
-func (c *Client) createPost(err error, stack stackTrace) postData {
-	return newPostData(c.context, err, stack)
-}
-
-// CreateError is a simple wrapper to manually post messages (errors) to raygun
-func (c *Client) CreateError(message string) error {
-	err := errors.New(message)
-	post := c.createPost(err, currentStack())
+// SubmitError is a simple wrapper to manually post error entry (errors) to raygun
+func (c *Client) SubmitError(entry *ErrorEntry) error {
+	post := newPostData(entry, currentStack())
 	return c.submit(post)
 }
 
