@@ -41,6 +41,13 @@ raygun.Silent(true)
 ```
 the error will be sent to Raygun using your API-key.
 
+To create a new error entry, use the following sample code:
+
+```
+err := errors.New("something went wrong")
+entry := c.CreateErrorEntry(err)
+raygun.SubmitError(entry)
+```
 ### Options
 
 The client returned by ``New`` has several chainable option-setting methods
@@ -48,11 +55,16 @@ The client returned by ``New`` has several chainable option-setting methods
 Method                    | Description
 --------------------------|------------------------------------------------------------
 `Silent(bool)`            | If set to true, this prevents the handler from sending the error to Raygun, printing it instead.
-`Request(*http.Request)`  | Adds the responsible http.Request to the error.
 `Version(string)`         | If your program has a version, you can add it here.
 `Tags([]string)`          | Adds the given tags to the error. These can be used for filtering later.
-`CustomData(interface{})` | Add arbitrary custom data to you error. Will only reach Raygun if it works with `json.Marshal()`.
-`User(string)`            | Add the name of the affected user to the error.
+
+The error entry returned by ``CreateErrorEntry`` has several chainable methods to capture extra context
+Method                    | Description
+--------------------------|------------------------------------------------------------
+`SetRequest(*http.Request)`  | Adds the responsible http.Request to the error.
+`SetCustomData(interface{})` | Add arbitrary custom data to you error. Will only reach Raygun if it works with `json.Marshal()`.
+`SetUser(string)`            | Add the name of the affected user to the error.
+
 
 ## Bugs and feature requests
 
