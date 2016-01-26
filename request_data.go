@@ -48,11 +48,11 @@ func newDetailsData(e *ErrorEntry, stack stackTrace) detailsData {
 	return detailsData{
 		MachineName:    hostname,
 		Version:        e.version,
-		Error:          newErrorData(e.err, stack),
+		Error:          newErrorData(e.Err, stack),
 		Tags:           e.tags,
-		UserCustomData: e.customData,
-		Request:        newRequestData(e.request),
-		User:           user{e.user},
+		UserCustomData: e.CustomData,
+		Request:        newRequestData(e.Request),
+		User:           user{e.User},
 		Context:        context{e.identifier},
 		Client:         clientData{"raygun4go", packageVersion, "https://github.com/gsblue/raygun4go"},
 	}

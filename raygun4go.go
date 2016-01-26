@@ -61,19 +61,20 @@ type Client struct {
 // contextInformation holds optional information on the context the error
 // occured in.
 type contextInformation struct {
-	Version     string   // the version of the app
-	DefaultTags []string // default tags that you would like to use to filter all the errors e.g. Production
-	identifier  string   // a unique identifier for the running process, automatically set by New()
+	Version    string   // the version of the app
+	Tags       []string // default tags that you would like to use to filter all the errors e.g. Production
+	identifier string   // a unique identifier for the running process, automatically set by New()
 }
 
+// ErrorEntry is the struct whihc gets build to send an error entry to raygun
 type ErrorEntry struct {
-	request    *http.Request // the request associated to the error
-	tags       []string      // tags that you would like to use to filter this error
-	customData interface{}   // whatever you like Raygun to know about this error
-	user       string        // the user that saw the error
+	Err        error
+	Request    *http.Request // the request associated to the error
+	CustomData interface{}   // whatever you like Raygun to know about this error
+	User       string        // the user that saw the error
 	version    string        // the version of the app
 	identifier string        // a unique identifier for the running process, automatically set by New()
-	err        error
+	tags       []string      // tags that you would like to use to filter this error
 }
 
 // raygunAPIEndpoint  holds the REST - JSON API Endpoint address
@@ -86,10 +87,10 @@ func (ci *contextInformation) Identifier() string {
 	return ci.identifier
 }
 
-// New creates and returns a Client, needing an appName, appVersion and an apiKey. It also
+// New creates and returns a Client, needing an appName and an apiKey. It also
 // creates a unique identifier for you program.
-func New(apiKey, appName, appVersion string, defaultTags []string) (c *Client, err error) {
-	context := &contextInformation{identifier: uuid.New(), Version: appVersion, DefaultTags: defaultTags}
+func New(appName, apiKey string) (c *Client, err error) {
+	context := &contextInformation{identifier: uuid.New()}
 	if appName == "" || apiKey == "" {
 		return nil, errors.New("appName and apiKey are required")
 	}
@@ -112,45 +113,53 @@ func (c *Client) LogToStdOut(l bool) *Client {
 	return c
 }
 
+// Tags is a chainable option-setting method to add tags to the context. You
+// can use tags to filter errors in Raygun.
+func (c *Client) Tags(tags []string) *Client {
+	c.context.Tags = tags
+	return c
+}
+
+// Version is a chainable option-setting method to add a version to the context.
+func (c *Client) Version(v string) *Client {
+	c.context.Version = v
+	return c
+}
+
+// CreateErrorEntryFromMsg creates a new instance of error entry from the msg parameter.
 func (c *Client) CreateErrorEntryFromMsg(msg string) *ErrorEntry {
 	return c.CreateErrorEntry(errors.New(msg))
 }
 
+// CreateErrorEntry creates a new instance of error entry from err parameter.
 func (c *Client) CreateErrorEntry(err error) *ErrorEntry {
 	entry := &ErrorEntry{
-		err:        err,
+		Err:        err,
 		version:    c.context.Version,
 		identifier: c.context.identifier,
+		tags:       c.context.Tags[:],
 	}
-	entry.tags = append(entry.tags, c.context.DefaultTags...)
 	return entry
 }
 
-// Request is a chainable option-setting method to add a request to the entry.
-func (e *ErrorEntry) Request(r *http.Request) *ErrorEntry {
-	e.request = r
+// SetRequest is a chainable option-setting method to add a request to the entry.
+func (e *ErrorEntry) SetRequest(r *http.Request) *ErrorEntry {
+	e.Request = r
 	return e
 }
 
-// AppendTags is a chainable option-setting method to append tags to the entry. You
-// can use tags to filter errors in Raygun.
-func (e *ErrorEntry) AppendTags(tags []string) *ErrorEntry {
-	e.tags = append(e.tags, tags...)
-	return e
-}
-
-// CustomData is a chainable option-setting method to add arbitrary custom data
+// SetCustomData is a chainable option-setting method to add arbitrary custom data
 // to the entry. Note that the given type (or at least parts of it)
 // must implement the Marshaler-interface for this to work.
-func (e *ErrorEntry) CustomData(data interface{}) *ErrorEntry {
-	e.customData = data
+func (e *ErrorEntry) SetCustomData(data interface{}) *ErrorEntry {
+	e.CustomData = data
 	return e
 }
 
-// User is a chainable option-setting method to add an affected Username to the
+// SetUser is a chainable option-setting method to add an affected Username to the
 // entry.
-func (e *ErrorEntry) User(u string) *ErrorEntry {
-	e.user = u
+func (e *ErrorEntry) SetUser(u string) *ErrorEntry {
+	e.User = u
 	return e
 }
 
