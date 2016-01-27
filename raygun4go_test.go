@@ -108,9 +108,10 @@ func TestErrorEntry(t *testing.T) {
 		e := c.CreateErrorEntry(testErr)
 
 		Convey("#Request", func() {
-			r := &http.Request{}
+			r, _ := http.NewRequest("GET", "/", nil)
 			e.SetRequest(r)
-			So(e.Request, ShouldResemble, r)
+			So(e.Request.HTTPMethod, ShouldEqual, r.Method)
+			So(e.Request.URL, ShouldEqual, r.URL.String())
 		})
 
 		Convey("#CustomData", func() {

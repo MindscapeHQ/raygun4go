@@ -10,8 +10,8 @@ import (
 
 // postData is the outmost element of the Raygun-REST-API
 type postData struct {
-	OccuredOn string      `json:"occurredOn"` // the time the error occured on, format 2006-01-02T15:04:05Z
-	Details   detailsData `json:"details"`    // all the details needed by the API
+	OccuredOn string       `json:"occurredOn"` // the time the error occured on, format 2006-01-02T15:04:05Z
+	Details   *detailsData `json:"details"`    // all the details needed by the API
 }
 
 // newPostData triggers the creation of and returns a postData-struct. It needs
@@ -31,30 +31,30 @@ type detailsData struct {
 	Error          errorData      `json:"error"`          // everything we know about the error itself
 	Tags           []string       `json:"tags"`           // the tags from context
 	UserCustomData UserCustomData `json:"userCustomData"` // the custom data from the context
-	Request        requestData    `json:"request"`        // the request from the context
-	User           user           `json:"user"`           // the user from the context
-	Context        context        `json:"context"`        // the identifier from the context
-	Client         clientData     `json:"client"`         // information on this client
+	Request        *RequestData   `json:"request"`        // the request from the context
+	User           *user          `json:"user"`           // the user from the context
+	Context        *context       `json:"context"`        // the identifier from the context
+	Client         *clientData    `json:"client"`         // information on this client
 }
 
 // newDetailsData returns a struct with all known details. It needs the context,
 // the error and the stack trace.
-func newDetailsData(e *ErrorEntry, stack stackTrace) detailsData {
+func newDetailsData(e *ErrorEntry, stack stackTrace) *detailsData {
 	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = "not available"
 	}
 
-	return detailsData{
+	return &detailsData{
 		MachineName:    hostname,
 		Version:        e.version,
 		Error:          newErrorData(e.Err, stack),
 		Tags:           e.tags,
 		UserCustomData: e.CustomData,
-		Request:        newRequestData(e.Request),
-		User:           user{e.User},
-		Context:        context{e.identifier},
-		Client:         clientData{"raygun4go", packageVersion, "https://github.com/gsblue/raygun4go"},
+		Request:        e.Request,
+		User:           &user{e.User},
+		Context:        &context{e.identifier},
+		Client:         &clientData{"raygun4go", packageVersion, "https://github.com/gsblue/raygun4go"},
 	}
 }
 
@@ -91,15 +91,15 @@ type stackTraceElement struct {
 }
 
 // stackTrace is the stack the trace will be parsed into.
-type stackTrace []stackTraceElement
+type stackTrace []*stackTraceElement
 
 // AddEntry is the method used by stack2struct to dump parsed elements.
 func (s *stackTrace) AddEntry(lineNumber int, packageName, fileName, methodName string) {
-	*s = append(*s, stackTraceElement{lineNumber, packageName, fileName, methodName})
+	*s = append(*s, &stackTraceElement{lineNumber, packageName, fileName, methodName})
 }
 
-// requestData holds all information on the request from the context
-type requestData struct {
+// RequestData holds all information on the request from the context
+type RequestData struct {
 	HostName    string            `json:"hostName"`
 	URL         string            `json:"url"`
 	HTTPMethod  string            `json:"httpMethod"`
@@ -109,16 +109,16 @@ type requestData struct {
 	Headers     map[string]string `json:"headers"`     // key-value-pairs from the header
 }
 
-// newRequestData parses all information from the request in the context to a
+// NewRequestData parses all information from the request in the context to a
 // struct. The struct is empty if no request was set.
-func newRequestData(r *http.Request) requestData {
+func NewRequestData(r *http.Request) *RequestData {
 	if r == nil {
-		return requestData{}
+		return &RequestData{}
 	}
 
 	r.ParseForm()
 
-	return requestData{
+	return &RequestData{
 		HostName:    r.Host,
 		URL:         r.URL.String(),
 		HTTPMethod:  r.Method,

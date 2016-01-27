@@ -69,12 +69,12 @@ type contextInformation struct {
 // ErrorEntry is the struct whihc gets build to send an error entry to raygun
 type ErrorEntry struct {
 	Err        error
-	Request    *http.Request // the request associated to the error
-	CustomData interface{}   // whatever you like Raygun to know about this error
-	User       string        // the user that saw the error
-	version    string        // the version of the app
-	identifier string        // a unique identifier for the running process, automatically set by New()
-	tags       []string      // tags that you would like to use to filter this error
+	Request    *RequestData // the request associated to the error
+	CustomData interface{}  // whatever you like Raygun to know about this error
+	User       string       // the user that saw the error
+	version    string       // the version of the app
+	identifier string       // a unique identifier for the running process, automatically set by New()
+	tags       []string     // tags that you would like to use to filter this error
 }
 
 // raygunAPIEndpoint  holds the REST - JSON API Endpoint address
@@ -144,7 +144,7 @@ func (c *Client) CreateErrorEntry(err error) *ErrorEntry {
 
 // SetRequest is a chainable option-setting method to add a request to the entry.
 func (e *ErrorEntry) SetRequest(r *http.Request) *ErrorEntry {
-	e.Request = r
+	e.Request = NewRequestData(r)
 	return e
 }
 
