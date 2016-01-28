@@ -56,7 +56,6 @@ type Client struct {
 	context     *contextInformation // optional context information
 	silent      bool                // if true, the error is printed instead of sent to Raygun
 	logToStdOut bool
-	httpClient  *http.Client
 }
 
 // contextInformation holds optional information on the context the error
@@ -95,7 +94,7 @@ func New(appName, apiKey string) (c *Client, err error) {
 	if appName == "" || apiKey == "" {
 		return nil, errors.New("appName and apiKey are required")
 	}
-	c = &Client{appName, apiKey, context, false, false, &http.Client{}}
+	c = &Client{appName, apiKey, context, false, false}
 	return c, nil
 }
 
@@ -209,7 +208,7 @@ func (c *Client) submit(post *postData) error {
 		fmt.Println(string(enc))
 		return nil
 	}
-
+	httpClient := &http.Client{}
 	json, err := json.Marshal(post)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to convert to JSON (%s): %#v", err.Error(), post)
@@ -222,7 +221,7 @@ func (c *Client) submit(post *postData) error {
 		return errors.New(errMsg)
 	}
 	r.Header.Add("X-ApiKey", c.apiKey)
-	resp, err := c.httpClient.Do(r)
+	resp, err := httpClient.Do(r)
 
 	defer resp.Body.Close()
 
