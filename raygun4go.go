@@ -51,22 +51,30 @@ import (
 // Client is the struct holding your Raygun configuration and context
 // information that is needed if an error occurs.
 type Client struct {
-	appName     string             // the name of the app
-	apiKey      string             // the api key for your raygun app
-	context     contextInformation // optional context information
-	silent      bool               // if true, the error is printed instead of sent to Raygun
+	appName     string              // the name of the app
+	apiKey      string              // the api key for your raygun app
+	context     *contextInformation // optional context information
+	silent      bool                // if true, the error is printed instead of sent to Raygun
 	logToStdOut bool
 }
 
 // contextInformation holds optional information on the context the error
 // occured in.
 type contextInformation struct {
-	Request    *http.Request // the request associated to the error
-	Version    string        // the version of the package
-	Tags       []string      // tags that you would like to use to filter this error
-	CustomData interface{}   // whatever you like Raygun to know about this error
-	User       string        // the user that saw the error
-	identifier string        // a unique identifier for the running process, automatically set by New()
+	Version    string   // the version of the app
+	Tags       []string // default tags that you would like to use to filter all the errors e.g. Production
+	identifier string   // a unique identifier for the running process, automatically set by New()
+}
+
+// ErrorEntry is the struct whihc gets build to send an error entry to raygun
+type ErrorEntry struct {
+	Err        error
+	Request    *RequestData // the request associated to the error
+	CustomData interface{}  // whatever you like Raygun to know about this error
+	User       string       // the user that saw the error
+	version    string       // the version of the app
+	identifier string       // a unique identifier for the running process, automatically set by New()
+	tags       []string     // tags that you would like to use to filter this error
 }
 
 // raygunAPIEndpoint  holds the REST - JSON API Endpoint address
@@ -82,7 +90,7 @@ func (ci *contextInformation) Identifier() string {
 // New creates and returns a Client, needing an appName and an apiKey. It also
 // creates a unique identifier for you program.
 func New(appName, apiKey string) (c *Client, err error) {
-	context := contextInformation{identifier: uuid.New()}
+	context := &contextInformation{identifier: uuid.New()}
 	if appName == "" || apiKey == "" {
 		return nil, errors.New("appName and apiKey are required")
 	}
@@ -105,9 +113,10 @@ func (c *Client) LogToStdOut(l bool) *Client {
 	return c
 }
 
-// Request is a chainable option-setting method to add a request to the context.
-func (c *Client) Request(r *http.Request) *Client {
-	c.context.Request = r
+// Tags is a chainable option-setting method to add tags to the context. You
+// can use tags to filter errors in Raygun.
+func (c *Client) Tags(tags []string) *Client {
+	c.context.Tags = tags
 	return c
 }
 
@@ -117,26 +126,41 @@ func (c *Client) Version(v string) *Client {
 	return c
 }
 
-// Tags is a chainable option-setting method to add tags to the context. You
-// can use tags to filter errors in Raygun.
-func (c *Client) Tags(tags []string) *Client {
-	c.context.Tags = tags
-	return c
+// CreateErrorEntryFromMsg creates a new instance of error entry from the msg parameter.
+func (c *Client) CreateErrorEntryFromMsg(msg string) *ErrorEntry {
+	return c.CreateErrorEntry(errors.New(msg))
 }
 
-// CustomData is a chainable option-setting method to add arbitrary custom data
-// to the context. Note that the given type (or at least parts of it)
+// CreateErrorEntry creates a new instance of error entry from err parameter.
+func (c *Client) CreateErrorEntry(err error) *ErrorEntry {
+	entry := &ErrorEntry{
+		Err:        err,
+		version:    c.context.Version,
+		identifier: c.context.identifier,
+		tags:       c.context.Tags[:],
+	}
+	return entry
+}
+
+// SetRequest is a chainable option-setting method to add a request to the entry.
+func (e *ErrorEntry) SetRequest(r *http.Request) *ErrorEntry {
+	e.Request = NewRequestData(r)
+	return e
+}
+
+// SetCustomData is a chainable option-setting method to add arbitrary custom data
+// to the entry. Note that the given type (or at least parts of it)
 // must implement the Marshaler-interface for this to work.
-func (c *Client) CustomData(data interface{}) *Client {
-	c.context.CustomData = data
-	return c
+func (e *ErrorEntry) SetCustomData(data interface{}) *ErrorEntry {
+	e.CustomData = data
+	return e
 }
 
-// User is a chainable option-setting method to add an affected Username to the
-// context.
-func (c *Client) User(u string) *Client {
-	c.context.User = u
-	return c
+// SetUser is a chainable option-setting method to add an affected Username to the
+// entry.
+func (e *ErrorEntry) SetUser(u string) *ErrorEntry {
+	e.User = u
+	return e
 }
 
 // HandleError sets up the error handling code. It needs to be called with
@@ -161,7 +185,7 @@ func (c *Client) HandleError() error {
 		log.Println("Recovering from:", err.Error())
 	}
 
-	post := c.createPost(err, currentStack())
+	post := newPostData(c.CreateErrorEntry(err), currentStack())
 	err = c.submit(post)
 
 	if c.logToStdOut && err != nil {
@@ -170,27 +194,21 @@ func (c *Client) HandleError() error {
 	return err
 }
 
-// createPost creates the data structure that will be sent to Raygun.
-func (c *Client) createPost(err error, stack stackTrace) postData {
-	return newPostData(c.context, err, stack)
-}
-
-// CreateError is a simple wrapper to manually post messages (errors) to raygun
-func (c *Client) CreateError(message string) error {
-	err := errors.New(message)
-	post := c.createPost(err, currentStack())
+// SubmitError is a simple wrapper to manually post error entry (errors) to raygun
+func (c *Client) SubmitError(entry *ErrorEntry) error {
+	post := newPostData(entry, currentStack())
 	return c.submit(post)
 }
 
 // submit takes care of actually sending the error to Raygun unless the silent
 // option is set.
-func (c *Client) submit(post postData) error {
+func (c *Client) submit(post *postData) error {
 	if c.silent {
 		enc, _ := json.MarshalIndent(post, "", "\t")
 		fmt.Println(string(enc))
 		return nil
 	}
-
+	httpClient := &http.Client{}
 	json, err := json.Marshal(post)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to convert to JSON (%s): %#v", err.Error(), post)
@@ -203,10 +221,10 @@ func (c *Client) submit(post postData) error {
 		return errors.New(errMsg)
 	}
 	r.Header.Add("X-ApiKey", c.apiKey)
-	httpClient := http.Client{}
 	resp, err := httpClient.Do(r)
 
 	defer resp.Body.Close()
+
 	if resp.StatusCode == 202 {
 		if c.logToStdOut {
 			log.Println("Successfully sent message to Raygun")

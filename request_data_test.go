@@ -17,14 +17,14 @@ func TestRequestData(t *testing.T) {
 		r, _ := http.NewRequest("GET", u, nil)
 
 		Convey("empty if no request given", func() {
-			d := newRequestData(nil)
-			So(d, ShouldResemble, requestData{})
+			d := NewRequestData(nil)
+			So(d, ShouldResemble, &RequestData{})
 		})
 
 		Convey("basic data", func() {
 			r.RemoteAddr = "1.2.3.4"
 
-			d := newRequestData(r)
+			d := NewRequestData(r)
 			So(d.HostName, ShouldEqual, "www.example.com")
 			So(d.URL, ShouldEqual, u)
 			So(d.HTTPMethod, ShouldEqual, "GET")
@@ -41,7 +41,7 @@ func TestRequestData(t *testing.T) {
 				"fizz": "[buzz; buzz2]",
 			}
 
-			d := newRequestData(r)
+			d := NewRequestData(r)
 			So(d.Form, ShouldResemble, expected)
 		})
 
@@ -51,7 +51,7 @@ func TestRequestData(t *testing.T) {
 				"fizz[]": "[buzz; buzz2]",
 			}
 
-			d := newRequestData(r)
+			d := NewRequestData(r)
 			So(d.QueryString, ShouldResemble, expected)
 		})
 
@@ -65,7 +65,7 @@ func TestRequestData(t *testing.T) {
 				"fizz": "buzz",
 			}
 
-			d := newRequestData(r)
+			d := NewRequestData(r)
 			So(d.Headers, ShouldResemble, expected)
 		})
 	})
@@ -81,8 +81,8 @@ func TestErrorData(t *testing.T) {
 		d := newErrorData(e, stack[3:])
 
 		expected := stackTrace{
-			stackTraceElement{11, "foo/package1", "filename1.go", "method1·001()"},
-			stackTraceElement{22, "foo/package2", "filename2.go", "(*action).method2(0x208304420)"},
+			&stackTraceElement{11, "foo/package1", "filename1.go", "method1·001()"},
+			&stackTraceElement{22, "foo/package2", "filename2.go", "(*action).method2(0x208304420)"},
 		}
 		So(d.Message, ShouldEqual, "test error")
 		So(d.StackTrace[0], ShouldResemble, expected[0])
