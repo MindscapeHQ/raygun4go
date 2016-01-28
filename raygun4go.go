@@ -56,6 +56,7 @@ type Client struct {
 	context     *contextInformation // optional context information
 	silent      bool                // if true, the error is printed instead of sent to Raygun
 	logToStdOut bool
+	httpClient  *http.Client
 }
 
 // contextInformation holds optional information on the context the error
@@ -94,7 +95,7 @@ func New(appName, apiKey string) (c *Client, err error) {
 	if appName == "" || apiKey == "" {
 		return nil, errors.New("appName and apiKey are required")
 	}
-	c = &Client{appName, apiKey, context, false, false}
+	c = &Client{appName, apiKey, context, false, false, &http.Client{}}
 	return c, nil
 }
 
@@ -202,7 +203,7 @@ func (c *Client) SubmitError(entry *ErrorEntry) error {
 
 // submit takes care of actually sending the error to Raygun unless the silent
 // option is set.
-func (c *Client) submit(post postData) error {
+func (c *Client) submit(post *postData) error {
 	if c.silent {
 		enc, _ := json.MarshalIndent(post, "", "\t")
 		fmt.Println(string(enc))
@@ -221,10 +222,10 @@ func (c *Client) submit(post postData) error {
 		return errors.New(errMsg)
 	}
 	r.Header.Add("X-ApiKey", c.apiKey)
-	httpClient := http.Client{}
-	resp, err := httpClient.Do(r)
+	resp, err := c.httpClient.Do(r)
 
 	defer resp.Body.Close()
+
 	if resp.StatusCode == 202 {
 		if c.logToStdOut {
 			log.Println("Successfully sent message to Raygun")

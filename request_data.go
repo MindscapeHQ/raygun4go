@@ -16,8 +16,8 @@ type postData struct {
 
 // newPostData triggers the creation of and returns a postData-struct. It needs
 // the error entry and the corresponding stack trace.
-func newPostData(e *ErrorEntry, stack stackTrace) postData {
-	return postData{
+func newPostData(e *ErrorEntry, stack stackTrace) *postData {
+	return &postData{
 		OccuredOn: time.Now().UTC().Format("2006-01-02T15:04:05Z"),
 		Details:   newDetailsData(e, stack),
 	}
