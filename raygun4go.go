@@ -45,7 +45,7 @@ import (
 	"log"
 	"net/http"
 
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/pborman/uuid"
 	gcontext "golang.org/x/net/context" //google context
 	"google.golang.org/appengine/urlfetch"
 )
