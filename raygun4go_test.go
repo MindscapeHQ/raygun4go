@@ -1,12 +1,12 @@
 package raygun4go
 
 import (
-	"code.google.com/p/go-uuid/uuid"
 	"fmt"
+	"github.com/pborman/uuid"
 
-	"appengine/aetest"
 	. "github.com/smartystreets/goconvey/convey"
 	"google.golang.org/appengine"
+	"google.golang.org/appengine/aetest"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
