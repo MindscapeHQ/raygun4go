@@ -53,7 +53,7 @@ Method                                 | Description
 `Tags([]string)`                       | Adds the given tags to the error. These can be used for filtering later.
 `CustomData(interface{})`              | Add arbitrary custom data to you error. Will only reach Raygun if it works with `json.Marshal()`.
 `User(string)`                         | Add the name of the affected user to the error.
-`AppAppEngineHTTPClient(*http.Client)` | On Google AppEngine pass the urlfetch.Client 
+`AppEngineHTTPClient(*http.Client)`    | On Google AppEngine pass the urlfetch.Client 
 
 ## Bugs and feature requests
 
