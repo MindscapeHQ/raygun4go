@@ -45,14 +45,15 @@ the error will be sent to Raygun using your API-key.
 
 The client returned by ``New`` has several chainable option-setting methods
 
-Method                    | Description
---------------------------|------------------------------------------------------------
-`Silent(bool)`            | If set to true, this prevents the handler from sending the error to Raygun, printing it instead.
-`Request(*http.Request)`  | Adds the responsible http.Request to the error.
-`Version(string)`         | If your program has a version, you can add it here.
-`Tags([]string)`          | Adds the given tags to the error. These can be used for filtering later.
-`CustomData(interface{})` | Add arbitrary custom data to you error. Will only reach Raygun if it works with `json.Marshal()`.
-`User(string)`            | Add the name of the affected user to the error.
+Method                                 | Description
+---------------------------------------|----------------------------------------------
+`Silent(bool)`                         | If set to true, this prevents the handler from sending the error to Raygun, printing it instead.
+`Request(*http.Request)`               | Adds the responsible http.Request to the error.
+`Version(string)`                      | If your program has a version, you can add it here.
+`Tags([]string)`                       | Adds the given tags to the error. These can be used for filtering later.
+`CustomData(interface{})`              | Add arbitrary custom data to you error. Will only reach Raygun if it works with `json.Marshal()`.
+`User(string)`                         | Add the name of the affected user to the error.
+`AppAppEngineHTTPClient(*http.Client)` | On Google AppEngine pass the urlfetch.Client 
 
 ## Bugs and feature requests
 
