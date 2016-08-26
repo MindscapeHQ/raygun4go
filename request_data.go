@@ -43,7 +43,7 @@ type detailsData struct {
 	Tags           []string       `json:"tags"`           // the tags from context
 	UserCustomData UserCustomData `json:"userCustomData"` // the custom data from the context
 	Request        requestData    `json:"request"`        // the request from the context
-	User           user           `json:"user"`           // the user from the context
+	User           User           `json:"user"`           // the user from the context
 	Context        context        `json:"context"`        // the identifier from the context
 	Client         clientData     `json:"client"`         // information on this client
 }

@@ -92,7 +92,7 @@ func TestErrorData(t *testing.T) {
 
 func TestUser(t *testing.T) {
 	Convey("has an exported identifier", t, func() {
-		u := user{"test"}
+		u := User { Identifier: "test" }
 		So(u.Identifier, ShouldEqual, "test")
 	})
 }
