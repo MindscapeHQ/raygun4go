@@ -65,7 +65,7 @@ type contextInformation struct {
 	Version    string        // the version of the package
 	Tags       []string      // tags that you would like to use to filter this error
 	CustomData interface{}   // whatever you like Raygun to know about this error
-	User       string        // the user that saw the error
+	User       User        // the user that saw the error
 	identifier string        // a unique identifier for the running process, automatically set by New()
 }
 
@@ -135,6 +135,13 @@ func (c *Client) CustomData(data interface{}) *Client {
 // User is a chainable option-setting method to add an affected Username to the
 // context.
 func (c *Client) User(u string) *Client {
+	c.context.User = User { Identifier: u }
+	return c
+}
+
+// WithUser is a chainable option-setting method to add an affected User details to the
+// context.
+func (c *Client) UserDetails(u User) *Client {
 	c.context.User = u
 	return c
 }
