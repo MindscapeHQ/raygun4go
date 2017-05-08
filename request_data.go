@@ -132,7 +132,7 @@ func newRequestData(r *http.Request) requestData {
 
 // clientData is the struct holding information on this client.
 type clientData struct {
-	Name      string `json:"identifier"`
+	Name      string `json:"name"`
 	Version   string `json:"version"`
 	ClientURL string `json:"clientUrl"`
 }
