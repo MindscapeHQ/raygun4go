@@ -24,7 +24,7 @@
 //   * hostname
 //   * url
 //   * http method
-//   * ip adress
+//   * ip address
 //   * url parameters
 //   * POSTed form fields
 //   * headers
@@ -59,7 +59,7 @@ type Client struct {
 }
 
 // contextInformation holds optional information on the context the error
-// occured in.
+// occurred in.
 type contextInformation struct {
 	Request    *http.Request // the request associated to the error
 	Version    string        // the version of the package
@@ -205,7 +205,10 @@ func (c *Client) submit(post postData) error {
 	r.Header.Add("X-ApiKey", c.apiKey)
 	httpClient := http.Client{}
 	resp, err := httpClient.Do(r)
-
+	if err != nil {
+		errMsg := fmt.Sprintf("HTTP Client Error: (%s)", err.Error())
+		return errors.New(errMsg)
+	}
 	defer resp.Body.Close()
 	if resp.StatusCode == 202 {
 		if c.logToStdOut {
