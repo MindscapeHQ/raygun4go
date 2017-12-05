@@ -46,6 +46,8 @@ import (
 	"net/http"
 
 	"github.com/pborman/uuid"
+	goerrors "github.com/go-errors/errors"
+	"github.com/kaeuferportal/stack2struct"
 )
 
 // Client is the struct holding your Raygun configuration and context
@@ -80,7 +82,7 @@ func (ci *contextInformation) Identifier() string {
 }
 
 // New creates and returns a Client, needing an appName and an apiKey. It also
-// creates a unique identifier for you program.
+// creates a unique identifier for your program.
 func New(appName, apiKey string) (c *Client, err error) {
 	context := contextInformation{identifier: uuid.New()}
 	if appName == "" || apiKey == "" {
@@ -175,10 +177,22 @@ func (c *Client) createPost(err error, stack stackTrace) postData {
 	return newPostData(c.context, err, stack)
 }
 
-// CreateError is a simple wrapper to manually post messages (errors) to raygun
+// Manually send a new error with the given message to Raygun. This will use the current execution stacktrace.
 func (c *Client) CreateError(message string) error {
 	err := errors.New(message)
 	post := c.createPost(err, currentStack())
+	
+	return c.submit(post)
+}
+
+// Manually send the given github.com/go-errors/errors.Error to Raygun. This will use the message and stacktrace of the given Error.
+func (c *Client) SendError(error *goerrors.Error) error {
+	err := errors.New(error.Error())
+
+	st := make(stackTrace, 0, 0)
+	stack2struct.Parse(error.Stack(), &st)
+	
+	post := c.createPost(err, st)
 	return c.submit(post)
 }
 
