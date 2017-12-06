@@ -185,12 +185,20 @@ func (c *Client) CreateError(message string) error {
 	return c.submit(post)
 }
 
-// Manually send the given github.com/go-errors/errors.Error to Raygun. This will use the message and stacktrace of the given Error.
-func (c *Client) SendError(error *goerrors.Error) error {
+// Manually send the given error to Raygun.
+// If the given error is a "github.com/go-errors/errors".Error, then its stacktrace will be used in the Raygun report.
+// For other errors, the current execution stacktrace is used in the Raygun report.
+func (c *Client) SendError(error error) error {
 	err := errors.New(error.Error())
 
-	st := make(stackTrace, 0, 0)
-	stack2struct.Parse(error.Stack(), &st)
+  var st stackTrace = nil
+  goerror := error.(*goerrors.Error)
+  if goerror != nil {
+	  st = make(stackTrace, 0, 0)
+	  stack2struct.Parse(goerror.Stack(), &st)
+  } else {
+  	st = currentStack()
+  }
 	
 	post := c.createPost(err, st)
 	return c.submit(post)
