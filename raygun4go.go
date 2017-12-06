@@ -192,8 +192,7 @@ func (c *Client) SendError(error error) error {
 	err := errors.New(error.Error())
 
   var st stackTrace = nil
-  goerror := error.(*goerrors.Error)
-  if goerror != nil {
+  if goerror, ok := error.(*goerrors.Error); ok {
 	  st = make(stackTrace, 0, 0)
 	  stack2struct.Parse(goerror.Stack(), &st)
   } else {
