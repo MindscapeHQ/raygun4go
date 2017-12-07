@@ -55,7 +55,7 @@ func TestClient(t *testing.T) {
 			So(clone.appName, ShouldResemble, c.appName)
 			So(clone.apiKey, ShouldResemble, c.apiKey)
 			So(clone.silent, ShouldResemble, c.silent)
-			So(clone.logToStdOutlogToStdOut, ShouldResemble, c.logToStdOut)
+			So(clone.logToStdOut, ShouldResemble, c.logToStdOut)
 			So(clone.context.Request, ShouldResemble, c.context.Request)
 			So(clone.context.Version, ShouldResemble, c.context.Version)
 			So(clone.context.Tags, ShouldResemble, c.context.Tags)
