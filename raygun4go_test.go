@@ -34,6 +34,36 @@ func TestClient(t *testing.T) {
 			So(err, ShouldEqual, nil)
 		})
 
+		Convey("#Clone", func()) {
+			t := []string{"Critical", "Urgent", "Fix it now!"}
+			c.Tags(t)
+
+			cd := "foo"
+			c.CustomData(cd)
+
+			r := &http.Request{}
+			c.Request(r)
+
+			v := "1.2.3"
+			c.Version(v)
+
+			u := "user"
+			c.User(u)
+
+			clone := c.Clone()
+
+			So(clone.appName, ShouldResemble, c.appName)
+			So(clone.apiKey, ShouldResemble, c.apiKey)
+			So(clone.silent, ShouldResemble, c.silent)
+			So(clone.logToStdOutlogToStdOut, ShouldResemble, c.logToStdOut)
+			So(clone.context.Request, ShouldResemble, c.context.Request)
+			So(clone.context.Version, ShouldResemble, c.context.Version)
+			So(clone.context.Tags, ShouldResemble, c.context.Tags)
+			So(clone.context.CustomData, ShouldResemble, c.context.CustomData)
+			So(clone.context.User, ShouldResemble, c.context.User)
+			So(clone.context.identifier, ShouldResemble, c.context.identifier)
+		}
+
 		Convey("#Request", func() {
 			r := &http.Request{}
 			c.Request(r)
