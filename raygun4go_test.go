@@ -34,7 +34,7 @@ func TestClient(t *testing.T) {
 			So(err, ShouldEqual, nil)
 		})
 
-		Convey("#Clone", func()) {
+		Convey("#Clone", func() {
 			t := []string{"Critical", "Urgent", "Fix it now!"}
 			c.Tags(t)
 
@@ -62,7 +62,7 @@ func TestClient(t *testing.T) {
 			So(clone.context.CustomData, ShouldResemble, c.context.CustomData)
 			So(clone.context.User, ShouldResemble, c.context.User)
 			So(clone.context.identifier, ShouldResemble, c.context.identifier)
-		}
+		})
 
 		Convey("#Request", func() {
 			r := &http.Request{}
