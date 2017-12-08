@@ -53,11 +53,12 @@ import (
 // Client is the struct holding your Raygun configuration and context
 // information that is needed if an error occurs.
 type Client struct {
-	appName     string             // the name of the app
-	apiKey      string             // the api key for your raygun app
-	context     contextInformation // optional context information
-	silent      bool               // if true, the error is printed instead of sent to Raygun
-	logToStdOut bool
+	appName      string             // the name of the app
+	apiKey       string             // the api key for your raygun app
+	context      contextInformation // optional context information
+	silent       bool               // if true, the error is printed instead of sent to Raygun
+	logToStdOut  bool               // if true, the client will print debug messages
+	asynchronous bool               // if true, reports are sent to Raygun from a new go routine
 }
 
 // contextInformation holds optional information on the context the error
@@ -88,7 +89,7 @@ func New(appName, apiKey string) (c *Client, err error) {
 	if appName == "" || apiKey == "" {
 		return nil, errors.New("appName and apiKey are required")
 	}
-	c = &Client{appName, apiKey, context, false, false}
+	c = &Client{appName, apiKey, context, false, false, false}
 	return c, nil
 }
 
@@ -104,6 +105,13 @@ func (c *Client) Silent(s bool) *Client {
 // any errors that occur when submiting to raygun to std out
 func (c *Client) LogToStdOut(l bool) *Client {
 	c.logToStdOut = l
+	return c
+}
+
+// Sets whether or not this client submits reports to Raygun asynchronously.
+// The default is false.
+func (c *Client) Asynchronous(a bool) *Client {
+	c.asynchronous = a
 	return c
 }
 
@@ -212,6 +220,15 @@ func (c *Client) submit(post postData) error {
 		return nil
 	}
 
+  if c.asynchronous {
+  	go c.submitCore(post)
+  	return nil
+  }
+  
+  return c.submitCore(post)
+}
+
+func (c *Client) submitCore(post postData) error {
 	json, err := json.Marshal(post)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to convert to JSON (%s): %#v", err.Error(), post)
