@@ -65,6 +65,24 @@ func TestClient(t *testing.T) {
 			So(c.context.User, ShouldResemble, u)
 		})
 
+		Convey("#Silent", func() {
+			So(c.silent, ShouldBeFalse)
+			c.Silent(true)
+			So(c.silent, ShouldBeTrue)
+		})
+
+		Convey("#LogToStdOut", func() {
+			So(c.logToStdOut, ShouldBeFalse)
+			c.Silent(true)
+			So(c.logToStdOut, ShouldBeTrue)
+		})
+
+		Convey("#Asynchronous", func() {
+			So(c.asynchronous, ShouldBeFalse)
+			c.Silent(true)
+			So(c.asynchronous, ShouldBeTrue)
+		})
+
 		Convey("#HandleError", func() {
 			u := "http://www.example.com?foo=bar&fizz[]=buzz&fizz[]=buzz2"
 			r, _ := http.NewRequest("GET", u, nil)
