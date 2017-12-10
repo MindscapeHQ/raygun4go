@@ -94,9 +94,22 @@ func New(appName, apiKey string) (c *Client, err error) {
 }
 
 func (c *Client) Clone() *Client {
-	contextInfoClone := contextInformation{c.context.Request, c.context.Version, c.context.Tags, c.context.CustomData, c.context.User, c.context.identifier}
+	contextInfoClone := contextInformation{
+		Request: c.context.Request,
+		Version: c.context.Version,
+		Tags: c.context.Tags,
+		CustomData: c.context.CustomData,
+		User: c.context.User,
+		identifier: c.context.identifier,
+	}
 
-	clientClone := &Client{c.appName, c.apiKey, contextInfoClone, c.silent, c.logToStdOut}
+	clientClone := &Client{
+		appName: c.appName,
+		apiKey: c.apiKey,
+		context: contextInfoClone,
+		silent: c.silent,
+		logToStdOut: c.logToStdOut,
+	}
 	return clientClone
 }
 
