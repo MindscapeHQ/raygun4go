@@ -62,6 +62,25 @@ func TestClient(t *testing.T) {
 			So(clone.context.CustomData, ShouldResemble, c.context.CustomData)
 			So(clone.context.User, ShouldResemble, c.context.User)
 			So(clone.context.identifier, ShouldResemble, c.context.identifier)
+
+			// After cloning, make some changes to the original client
+			// to assert that they aren't picked up in the clone
+			c.Tags([]string{"Expected"})
+			c.CustomData("bar")
+			newRequest, _ := http.NewRequest("POST", "https://my.api.io", nil)
+			c.Request(newRequest)
+			c.Version("2.3.4")
+			c.User("user2")
+			c.Silent(false)
+			c.LogToStdOut(true)
+
+			So(clone.silent, ShouldNotResemble, c.silent)
+			So(clone.logToStdOut, ShouldNotResemble, c.logToStdOut)
+			So(clone.context.Request, ShouldNotResemble, c.context.Request)
+			So(clone.context.Version, ShouldNotResemble, c.context.Version)
+			So(clone.context.Tags, ShouldNotResemble, c.context.Tags)
+			So(clone.context.CustomData, ShouldNotResemble, c.context.CustomData)
+			So(clone.context.User, ShouldNotResemble, c.context.User)
 		})
 
 		Convey("#Request", func() {
