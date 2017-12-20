@@ -45,9 +45,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/pborman/uuid"
 	goerrors "github.com/go-errors/errors"
 	"github.com/kaeuferportal/stack2struct"
+	"github.com/pborman/uuid"
 )
 
 // Client is the struct holding your Raygun configuration and context
@@ -181,7 +181,7 @@ func (c *Client) createPost(err error, stack stackTrace) postData {
 func (c *Client) CreateError(message string) error {
 	err := errors.New(message)
 	post := c.createPost(err, currentStack())
-	
+
 	return c.submit(post)
 }
 
@@ -191,14 +191,14 @@ func (c *Client) CreateError(message string) error {
 func (c *Client) SendError(error error) error {
 	err := errors.New(error.Error())
 
-  var st stackTrace = nil
-  if goerror, ok := error.(*goerrors.Error); ok {
-	  st = make(stackTrace, 0, 0)
-	  stack2struct.Parse(goerror.Stack(), &st)
-  } else {
-  	st = currentStack()
-  }
-	
+	var st stackTrace = nil
+	if goerror, ok := error.(*goerrors.Error); ok {
+		st = make(stackTrace, 0, 0)
+		stack2struct.Parse(goerror.Stack(), &st)
+	} else {
+		st = currentStack()
+	}
+
 	post := c.createPost(err, st)
 	return c.submit(post)
 }
@@ -226,6 +226,11 @@ func (c *Client) submit(post postData) error {
 	r.Header.Add("X-ApiKey", c.apiKey)
 	httpClient := http.Client{}
 	resp, err := httpClient.Do(r)
+
+	if err != nil {
+		errMsg := fmt.Sprintf("Failed to request (%s)", err.Error())
+		return errors.New(errMsg)
+	}
 
 	defer resp.Body.Close()
 	if resp.StatusCode == 202 {
