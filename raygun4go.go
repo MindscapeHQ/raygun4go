@@ -53,11 +53,12 @@ import (
 // Client is the struct holding your Raygun configuration and context
 // information that is needed if an error occurs.
 type Client struct {
-	appName     string             // the name of the app
-	apiKey      string             // the api key for your raygun app
-	context     contextInformation // optional context information
-	silent      bool               // if true, the error is printed instead of sent to Raygun
-	logToStdOut bool
+	appName             string             // the name of the app
+	apiKey              string             // the api key for your raygun app
+	context             contextInformation // optional context information
+	silent              bool               // if true, the error is printed instead of sent to Raygun
+	logToStdOut         bool
+	appEngineHTTPClient *http.Client // when running on GAE use the urlfetch http client
 }
 
 // contextInformation holds optional information on the context the error
@@ -88,7 +89,7 @@ func New(appName, apiKey string) (c *Client, err error) {
 	if appName == "" || apiKey == "" {
 		return nil, errors.New("appName and apiKey are required")
 	}
-	c = &Client{appName, apiKey, context, false, false}
+	c = &Client{appName, apiKey, context, false, false, nil}
 	return c, nil
 }
 
@@ -138,6 +139,12 @@ func (c *Client) CustomData(data interface{}) *Client {
 // context.
 func (c *Client) User(u string) *Client {
 	c.context.User = u
+	return c
+}
+
+// AppEngineHTTPClient enables overiding the http.client with Google App Engine http.client using urlfetch
+func (c *Client) AppEngineHTTPClient(client *http.Client) *Client {
+	c.appEngineHTTPClient = client
 	return c
 }
 
@@ -224,7 +231,13 @@ func (c *Client) submit(post postData) error {
 		return errors.New(errMsg)
 	}
 	r.Header.Add("X-ApiKey", c.apiKey)
-	httpClient := http.Client{}
+
+	var httpClient *http.Client
+	if c.appEngineHTTPClient == nil {
+		httpClient = &http.Client{}
+	} else {
+		httpClient = c.appEngineHTTPClient
+	}
 	resp, err := httpClient.Do(r)
 
 	defer resp.Body.Close()
