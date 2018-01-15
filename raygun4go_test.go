@@ -15,7 +15,6 @@ import (
 func TestClient(t *testing.T) {
 	Convey("Client", t, func() {
 		c, _ := New("app", "key")
-		c.Silent(true)
 		So(c.appName, ShouldEqual, "app")
 		So(c.apiKey, ShouldEqual, "key")
 		So(c.context.Request, ShouldBeNil)
@@ -65,6 +64,24 @@ func TestClient(t *testing.T) {
 			So(c.context.User, ShouldResemble, u)
 		})
 
+		Convey("#Silent", func() {
+			So(c.silent, ShouldBeFalse)
+			c.Silent(true)
+			So(c.silent, ShouldBeTrue)
+		})
+
+		Convey("#LogToStdOut", func() {
+			So(c.logToStdOut, ShouldBeFalse)
+			c.LogToStdOut(true)
+			So(c.logToStdOut, ShouldBeTrue)
+		})
+
+		Convey("#Asynchronous", func() {
+			So(c.asynchronous, ShouldBeFalse)
+			c.Asynchronous(true)
+			So(c.asynchronous, ShouldBeTrue)
+		})
+
 		Convey("#HandleError", func() {
 			u := "http://www.example.com?foo=bar&fizz[]=buzz&fizz[]=buzz2"
 			r, _ := http.NewRequest("GET", u, nil)
@@ -74,6 +91,7 @@ func TestClient(t *testing.T) {
 				"fizz": []string{"buzz", "buzz2"},
 			}
 			r.Header.Add("Cookie", "cookie1=value1; cookie2=value2")
+			c.Silent(true)
 			c.Request(r)
 			c.apiKey = "key"
 			c.context.Version = "goconvey"
