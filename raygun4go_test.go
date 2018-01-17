@@ -34,6 +34,58 @@ func TestClient(t *testing.T) {
 			So(err, ShouldEqual, nil)
 		})
 
+		Convey("#Clone", func() {
+			t := []string{"Critical", "Urgent", "Fix it now!"}
+			c.Tags(t)
+
+			cd := "foo"
+			c.CustomData(cd)
+
+			r := &http.Request{}
+			c.Request(r)
+
+			v := "1.2.3"
+			c.Version(v)
+
+			u := "user"
+			c.User(u)
+
+			clone := c.Clone()
+
+			So(clone.appName, ShouldResemble, c.appName)
+			So(clone.apiKey, ShouldResemble, c.apiKey)
+			So(clone.silent, ShouldResemble, c.silent)
+			So(clone.logToStdOut, ShouldResemble, c.logToStdOut)
+			So(clone.asynchronous, ShouldResemble, c.asynchronous)
+			So(clone.context.Request, ShouldResemble, c.context.Request)
+			So(clone.context.Version, ShouldResemble, c.context.Version)
+			So(clone.context.Tags, ShouldResemble, c.context.Tags)
+			So(clone.context.CustomData, ShouldResemble, c.context.CustomData)
+			So(clone.context.User, ShouldResemble, c.context.User)
+			So(clone.context.identifier, ShouldResemble, c.context.identifier)
+
+			// After cloning, make some changes to the original client
+			// to assert that they aren't picked up in the clone
+			c.Tags([]string{"Expected"})
+			c.CustomData("bar")
+			newRequest, _ := http.NewRequest("POST", "https://my.api.io", nil)
+			c.Request(newRequest)
+			c.Version("2.3.4")
+			c.User("user2")
+			c.Silent(true)
+			c.LogToStdOut(true)
+			c.Asynchronous(true)
+
+			So(clone.silent, ShouldNotResemble, c.silent)
+			So(clone.logToStdOut, ShouldNotResemble, c.logToStdOut)
+			So(clone.asynchronous, ShouldNotResemble, c.asynchronous)
+			So(clone.context.Request, ShouldNotResemble, c.context.Request)
+			So(clone.context.Version, ShouldNotResemble, c.context.Version)
+			So(clone.context.Tags, ShouldNotResemble, c.context.Tags)
+			So(clone.context.CustomData, ShouldNotResemble, c.context.CustomData)
+			So(clone.context.User, ShouldNotResemble, c.context.User)
+		})
+
 		Convey("#Request", func() {
 			r := &http.Request{}
 			c.Request(r)

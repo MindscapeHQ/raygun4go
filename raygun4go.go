@@ -93,6 +93,27 @@ func New(appName, apiKey string) (c *Client, err error) {
 	return c, nil
 }
 
+func (c *Client) Clone() *Client {
+	contextInfoClone := contextInformation{
+		Request: c.context.Request,
+		Version: c.context.Version,
+		Tags: c.context.Tags,
+		CustomData: c.context.CustomData,
+		User: c.context.User,
+		identifier: c.context.identifier,
+	}
+
+	clientClone := &Client{
+		appName: c.appName,
+		apiKey: c.apiKey,
+		context: contextInfoClone,
+		silent: c.silent,
+		logToStdOut: c.logToStdOut,
+		asynchronous: c.asynchronous,
+	}
+	return clientClone
+}
+
 // Silent sets the silent-property on the Client. If true, errors will not be
 // sent to Raygun but printed instead.
 func (c *Client) Silent(s bool) *Client {
