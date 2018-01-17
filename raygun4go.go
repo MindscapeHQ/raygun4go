@@ -109,6 +109,7 @@ func (c *Client) Clone() *Client {
 		context: contextInfoClone,
 		silent: c.silent,
 		logToStdOut: c.logToStdOut,
+		asynchronous: c.asynchronous,
 	}
 	return clientClone
 }
