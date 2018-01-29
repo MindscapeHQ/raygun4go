@@ -113,7 +113,25 @@ func TestClient(t *testing.T) {
 		Convey("#User", func() {
 			u := "user"
 			c.User(u)
-			So(c.context.User, ShouldResemble, u)
+			So(c.context.User.Identifier, ShouldResemble, u)
+		})
+
+		Convey("#UserDetails", func() {
+			u := User {
+				Identifier: "user25",
+				IsAnonymous: false,
+				Email: "user25@example.com",
+				FullName: "Robbie Raygun",
+				FirstName: "Robbie",
+				UUID: "123123-abcabc-123123",
+			}
+			c.UserDetails(u)
+			So(c.context.User.Identifier, ShouldEqual, u.Identifier)
+			So(c.context.User.IsAnonymous, ShouldEqual, u.IsAnonymous)
+			So(c.context.User.Email, ShouldEqual, u.Email)
+			So(c.context.User.FullName, ShouldEqual, u.FullName)
+			So(c.context.User.FirstName, ShouldEqual, u.FirstName)
+			So(c.context.User.UUID, ShouldEqual, u.UUID)
 		})
 
 		Convey("#Silent", func() {
@@ -149,7 +167,7 @@ func TestClient(t *testing.T) {
 			c.context.Version = "goconvey"
 			c.context.Tags = []string{"golang", "test"}
 			c.context.CustomData = map[string]string{"foo": "bar"}
-			c.context.User = "Test User"
+			c.context.User = User { Identifier: "Test User" }
 			defer c.HandleError()
 			panic("Test: See if this works with Raygun")
 		})

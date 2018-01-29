@@ -24,6 +24,16 @@ func newPostData(context contextInformation, err error, stack stackTrace) postDa
 	}
 }
 
+// User is an exported struct holding user information that is submitted when an error occurs
+type User struct {
+	Identifier 	string `json:"identifier"`
+	IsAnonymous bool `json:"isAnonymous"`
+	Email 			string `json:"email"`
+	FullName 		string `json:"fullName"`
+	FirstName 	string `json:"firstName"`
+	UUID 				string `json:"uuid"`
+}
+
 // detailsData is the container holding all information regarding the more
 // detailed circumstances the error occured in.
 type detailsData struct {
@@ -33,7 +43,7 @@ type detailsData struct {
 	Tags           []string       `json:"tags"`           // the tags from context
 	UserCustomData UserCustomData `json:"userCustomData"` // the custom data from the context
 	Request        requestData    `json:"request"`        // the request from the context
-	User           user           `json:"user"`           // the user from the context
+	User           User           `json:"user"`           // the user from the context
 	Context        context        `json:"context"`        // the identifier from the context
 	Client         clientData     `json:"client"`         // information on this client
 }
@@ -46,6 +56,7 @@ func newDetailsData(c contextInformation, err error, stack stackTrace) detailsDa
 		hostname = "not available"
 	}
 
+
 	return detailsData{
 		MachineName:    hostname,
 		Version:        c.Version,
@@ -53,7 +64,7 @@ func newDetailsData(c contextInformation, err error, stack stackTrace) detailsDa
 		Tags:           c.Tags,
 		UserCustomData: c.CustomData,
 		Request:        newRequestData(c.Request),
-		User:           user{c.User},
+		User:           c.User,
 		Context:        context{c.Identifier()},
 		Client:         clientData{"raygun4go", packageVersion, "https://github.com/MindscapeHQ/raygun4go"},
 	}
@@ -135,11 +146,6 @@ type clientData struct {
 	Name      string `json:"name"`
 	Version   string `json:"version"`
 	ClientURL string `json:"clientUrl"`
-}
-
-// user holds information on the affected user.
-type user struct {
-	Identifier string `json:"identifier"`
 }
 
 // context holds information on the program context.
