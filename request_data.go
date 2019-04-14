@@ -9,16 +9,16 @@ import (
 )
 
 // postData is the outmost element of the Raygun-REST-API
-type postData struct {
+type PostData struct {
 	OccuredOn string      `json:"occurredOn"` // the time the error occured on, format 2006-01-02T15:04:05Z
-	Details   detailsData `json:"details"`    // all the details needed by the API
+	Details   DetailsData `json:"details"`    // all the details needed by the API
 }
 
-// newPostData triggers the creation of and returns a postData-struct. It needs
+// newPostData triggers the creation of and returns a PostData-struct. It needs
 // the configured context from the Client, the error and the corresponding
 // stack trace.
-func newPostData(context contextInformation, err error, stack stackTrace) postData {
-	return postData{
+func newPostData(context contextInformation, err error, stack StackTrace) PostData {
+	return PostData{
 		OccuredOn: time.Now().UTC().Format("2006-01-02T15:04:05Z"),
 		Details:   newDetailsData(context, err, stack),
 	}
@@ -26,49 +26,50 @@ func newPostData(context contextInformation, err error, stack stackTrace) postDa
 
 // detailsData is the container holding all information regarding the more
 // detailed circumstances the error occured in.
-type detailsData struct {
+type DetailsData struct {
 	MachineName    string         `json:"machineName"`    // the machine's hostname
 	Version        string         `json:"version"`        // the version from context
-	Error          errorData      `json:"error"`          // everything we know about the error itself
+	Error          ErrorData      `json:"error"`          // everything we know about the error itself
 	Tags           []string       `json:"tags"`           // the tags from context
 	UserCustomData UserCustomData `json:"userCustomData"` // the custom data from the context
-	Request        requestData    `json:"request"`        // the request from the context
-	User           user           `json:"user"`           // the user from the context
-	Context        context        `json:"context"`        // the identifier from the context
-	Client         clientData     `json:"client"`         // information on this client
+	Request        RequestData    `json:"request"`        // the request from the context
+	User           User           `json:"user"`           // the user from the context
+	Context        Context        `json:"context"`        // the identifier from the context
+	Client         ClientData     `json:"client"`         // information on this client
+	GroupingKey    *string        `json:"groupingKey"`    // a custom key that Raygun will use for grouping errors
 }
 
 // newDetailsData returns a struct with all known details. It needs the context,
 // the error and the stack trace.
-func newDetailsData(c contextInformation, err error, stack stackTrace) detailsData {
+func newDetailsData(c contextInformation, err error, stack StackTrace) DetailsData {
 	hostname, e := os.Hostname()
 	if e != nil {
 		hostname = "not available"
 	}
 
-	return detailsData{
+	return DetailsData{
 		MachineName:    hostname,
 		Version:        c.Version,
 		Error:          newErrorData(err, stack),
 		Tags:           c.Tags,
 		UserCustomData: c.CustomData,
 		Request:        newRequestData(c.Request),
-		User:           user{c.User},
-		Context:        context{c.Identifier()},
-		Client:         clientData{"raygun4go", packageVersion, "https://github.com/MindscapeHQ/raygun4go"},
+		User:           User{c.User},
+		Context:        Context{c.Identifier()},
+		Client:         ClientData{"raygun4go", packageVersion, "https://github.com/MindscapeHQ/raygun4go"},
 	}
 }
 
 // errorData is the struct holding all technical information on the error.
-type errorData struct {
+type ErrorData struct {
 	Message    string     `json:"message"`    // the actual message the error produced
-	StackTrace stackTrace `json:"stackTrace"` // the error's stack trace
+	StackTrace StackTrace `json:"stackTrace"` // the error's stack trace
 }
 
 // newErrorData fills returns a struct with all the information known about the
 // error.
-func newErrorData(err error, s stackTrace) errorData {
-	return errorData{
+func newErrorData(err error, s StackTrace) ErrorData {
+	return ErrorData{
 		Message:    err.Error(),
 		StackTrace: s,
 	}
@@ -76,15 +77,15 @@ func newErrorData(err error, s stackTrace) errorData {
 
 // currentStack returns the current stack. However, it omits the first 3 entries
 // to avoid cluttering the trace with raygun4go-specific calls.
-func currentStack() stackTrace {
-	s := make(stackTrace, 0, 0)
+func currentStack() StackTrace {
+	s := make(StackTrace, 0, 0)
 	stack2struct.Current(&s)
 	return s[3:]
 }
 
 // stackTraceElement is one element of the error's stack trace. It is filled by
 // stack2struct.
-type stackTraceElement struct {
+type StackTraceElement struct {
 	LineNumber  int    `json:"lineNumber"`
 	PackageName string `json:"className"`
 	FileName    string `json:"fileName"`
@@ -92,15 +93,15 @@ type stackTraceElement struct {
 }
 
 // stackTrace is the stack the trace will be parsed into.
-type stackTrace []stackTraceElement
+type StackTrace []StackTraceElement
 
 // AddEntry is the method used by stack2struct to dump parsed elements.
-func (s *stackTrace) AddEntry(lineNumber int, packageName, fileName, methodName string) {
-	*s = append(*s, stackTraceElement{lineNumber, packageName, fileName, methodName})
+func (s *StackTrace) AddEntry(lineNumber int, packageName, fileName, methodName string) {
+	*s = append(*s, StackTraceElement{lineNumber, packageName, fileName, methodName})
 }
 
 // requestData holds all information on the request from the context
-type requestData struct {
+type RequestData struct {
 	HostName    string            `json:"hostName"`
 	URL         string            `json:"url"`
 	HTTPMethod  string            `json:"httpMethod"`
@@ -112,14 +113,14 @@ type requestData struct {
 
 // newRequestData parses all information from the request in the context to a
 // struct. The struct is empty if no request was set.
-func newRequestData(r *http.Request) requestData {
+func newRequestData(r *http.Request) RequestData {
 	if r == nil {
-		return requestData{}
+		return RequestData{}
 	}
 
 	r.ParseForm()
 
-	return requestData{
+	return RequestData{
 		HostName:    r.Host,
 		URL:         r.URL.String(),
 		HTTPMethod:  r.Method,
@@ -131,19 +132,19 @@ func newRequestData(r *http.Request) requestData {
 }
 
 // clientData is the struct holding information on this client.
-type clientData struct {
+type ClientData struct {
 	Name      string `json:"name"`
 	Version   string `json:"version"`
 	ClientURL string `json:"clientUrl"`
 }
 
 // user holds information on the affected user.
-type user struct {
+type User struct {
 	Identifier string `json:"identifier"`
 }
 
 // context holds information on the program context.
-type context struct {
+type Context struct {
 	Identifier string `json:"identifier"`
 }
 
