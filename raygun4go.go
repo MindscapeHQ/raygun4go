@@ -74,7 +74,7 @@ type contextInformation struct {
 }
 
 // raygunAPIEndpoint  holds the REST - JSON API Endpoint address
-var raygunEndpoint = "https://api.raygun.io"
+var raygunEndpoint = "https://api.raygun.com"
 
 // Identifier returns the otherwise private identifier property from the
 // Client's context. It is set by the New()-method and represents a unique
