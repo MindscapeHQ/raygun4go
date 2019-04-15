@@ -44,7 +44,7 @@ func TestStack2Struct(t *testing.T) {
 			testElement{13,
 				"main",
 				"stack2struct_test.go",
-				"func·001()"},
+				"func.001()"},
 			testElement{44,
 				"github.com/smartystreets/goconvey/convey",
 				"registration.go",
