@@ -1,0 +1,3 @@
+goroutine 5 [running]:
+main.func.001()
+main/stack2struct_test.go:13

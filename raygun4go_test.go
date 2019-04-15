@@ -63,6 +63,7 @@ func TestClient(t *testing.T) {
 			So(clone.context.CustomData, ShouldResemble, c.context.CustomData)
 			So(clone.context.User, ShouldResemble, c.context.User)
 			So(clone.context.identifier, ShouldResemble, c.context.identifier)
+			So(clone.context.GetCustomGroupingKey, ShouldResemble, c.context.GetCustomGroupingKey)
 
 			// After cloning, make some changes to the original client
 			// to assert that they aren't picked up in the clone
@@ -75,6 +76,7 @@ func TestClient(t *testing.T) {
 			c.Silent(true)
 			c.LogToStdOut(true)
 			c.Asynchronous(true)
+			c.CustomGroupingKeyFunction(func(error, PostData)string{return "customGroupingKey"})
 
 			So(clone.silent, ShouldNotResemble, c.silent)
 			So(clone.logToStdOut, ShouldNotResemble, c.logToStdOut)
@@ -84,6 +86,7 @@ func TestClient(t *testing.T) {
 			So(clone.context.Tags, ShouldNotResemble, c.context.Tags)
 			So(clone.context.CustomData, ShouldNotResemble, c.context.CustomData)
 			So(clone.context.User, ShouldNotResemble, c.context.User)
+			So(clone.context.GetCustomGroupingKey, ShouldNotResemble, c.context.GetCustomGroupingKey)
 		})
 
 		Convey("#Request", func() {
@@ -121,6 +124,12 @@ func TestClient(t *testing.T) {
 			c.Silent(true)
 			So(c.silent, ShouldBeTrue)
 		})
+		
+		Convey("#CustomGroupingKeyFunction", func() {
+			So(c.context.GetCustomGroupingKey, ShouldEqual, nil)
+		    c.CustomGroupingKeyFunction(func(error, PostData)string{return "customGroupingKey"})
+			So(c.context.GetCustomGroupingKey, ShouldNotEqual, nil)
+		})
 
 		Convey("#LogToStdOut", func() {
 			So(c.logToStdOut, ShouldBeFalse)
@@ -146,6 +155,7 @@ func TestClient(t *testing.T) {
 			c.Silent(true)
 			c.Request(r)
 			c.apiKey = "key"
+			c.CustomGroupingKeyFunction(func(error, PostData)string{return "customGroupingKey"})
 			c.context.Version = "goconvey"
 			c.context.Tags = []string{"golang", "test"}
 			c.context.CustomData = map[string]string{"foo": "bar"}
