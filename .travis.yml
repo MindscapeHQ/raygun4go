@@ -14,5 +14,4 @@ matrix:
 install:
   - go get github.com/smartystreets/goconvey
   - go get github.com/pborman/uuid
-  - go get github.com/kaeuferportal/stack2struct
   - go get github.com/go-errors/errors
