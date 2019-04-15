@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/kaeuferportal/stack2struct"
 )
 
 // postData is the outmost element of the Raygun-REST-API
@@ -79,7 +77,7 @@ func newErrorData(err error, s StackTrace) ErrorData {
 // to avoid cluttering the trace with raygun4go-specific calls.
 func currentStack() StackTrace {
 	s := make(StackTrace, 0, 0)
-	stack2struct.Current(&s)
+	Current(&s)
 	return s[3:]
 }
 

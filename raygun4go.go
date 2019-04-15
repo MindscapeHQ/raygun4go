@@ -46,7 +46,6 @@ import (
 	"net/http"
 
 	goerrors "github.com/go-errors/errors"
-	"github.com/kaeuferportal/stack2struct"
 	"github.com/pborman/uuid"
 )
 
@@ -244,7 +243,7 @@ func (c *Client) SendError(error error) error {
 	var st StackTrace = nil
 	if goerror, ok := error.(*goerrors.Error); ok {
 		st = make(StackTrace, 0, 0)
-		stack2struct.Parse(goerror.Stack(), &st)
+		Parse(goerror.Stack(), &st)
 	} else {
 		st = currentStack()
 	}
