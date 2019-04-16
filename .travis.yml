@@ -1,9 +1,9 @@
 language: go
 go:
-  - 1.2
-  - 1.3
-  - 1.4
-  - 1.5
+  - "1.9"
+  - "1.10"
+  - "1.11"
+  - "1.12"
   - tip
 env:
   - GOARCH=386
@@ -14,5 +14,4 @@ matrix:
 install:
   - go get github.com/smartystreets/goconvey
   - go get github.com/pborman/uuid
-  - go get github.com/kaeuferportal/stack2struct
   - go get github.com/go-errors/errors

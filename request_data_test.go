@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/kaeuferportal/stack2struct"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -18,7 +17,7 @@ func TestRequestData(t *testing.T) {
 
 		Convey("empty if no request given", func() {
 			d := newRequestData(nil)
-			So(d, ShouldResemble, requestData{})
+			So(d, ShouldResemble, RequestData{})
 		})
 
 		Convey("basic data", func() {
@@ -75,14 +74,14 @@ func TestErrorData(t *testing.T) {
 	Convey("#NewErrorData", t, func() {
 		trace, _ := ioutil.ReadFile("_fixtures/stack_trace")
 		e := errors.New("test error")
-		stack := make(stackTrace, 0, 0)
-		stack2struct.Parse(trace, &stack)
+		stack := make(StackTrace, 0, 0)
+		Parse(trace, &stack)
 
 		d := newErrorData(e, stack[3:])
 
-		expected := stackTrace{
-			stackTraceElement{11, "foo/package1", "filename1.go", "method1·001()"},
-			stackTraceElement{22, "foo/package2", "filename2.go", "(*action).method2(0x208304420)"},
+		expected := StackTrace{
+			StackTraceElement{78, "github.com/smartystreets/goconvey/convey", "scope.go", "(*scope).visitNextChild(0x208326090, 0x2082d26c0)"},
+			StackTraceElement{71, "github.com/smartystreets/goconvey/convey", "scope.go", "(*scope).visit(0x208326090, 0x2082d26c0)"},
 		}
 		So(d.Message, ShouldEqual, "test error")
 		So(d.StackTrace[0], ShouldResemble, expected[0])
@@ -92,14 +91,14 @@ func TestErrorData(t *testing.T) {
 
 func TestUser(t *testing.T) {
 	Convey("has an exported identifier", t, func() {
-		u := user{"test"}
+		u := User{"test"}
 		So(u.Identifier, ShouldEqual, "test")
 	})
 }
 
 func TestContext(t *testing.T) {
 	Convey("has an exported identifier", t, func() {
-		c := context{"test"}
+		c := Context{"test"}
 		So(c.Identifier, ShouldEqual, "test")
 	})
 }

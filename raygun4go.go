@@ -46,7 +46,6 @@ import (
 	"net/http"
 
 	goerrors "github.com/go-errors/errors"
-	"github.com/kaeuferportal/stack2struct"
 	"github.com/pborman/uuid"
 )
 
@@ -64,16 +63,17 @@ type Client struct {
 // contextInformation holds optional information on the context the error
 // occured in.
 type contextInformation struct {
-	Request    *http.Request // the request associated to the error
-	Version    string        // the version of the package
-	Tags       []string      // tags that you would like to use to filter this error
-	CustomData interface{}   // whatever you like Raygun to know about this error
-	User       string        // the user that saw the error
-	identifier string        // a unique identifier for the running process, automatically set by New()
+	Request    *http.Request                          // the request associated to the error
+	Version    string                                 // the version of the package
+	Tags       []string                               // tags that you would like to use to filter this error
+	CustomData interface{}                            // whatever you like Raygun to know about this error
+	User       string                                 // the user that saw the error
+	GetCustomGroupingKey func(error, PostData) string // A function that takes the original error and Raygun payload and returns a key for grouping errors together in Raygun.
+	identifier string                                 // a unique identifier for the running process, automatically set by New()
 }
 
 // raygunAPIEndpoint  holds the REST - JSON API Endpoint address
-var raygunEndpoint = "https://api.raygun.io"
+var raygunEndpoint = "https://api.raygun.com"
 
 // Identifier returns the otherwise private identifier property from the
 // Client's context. It is set by the New()-method and represents a unique
@@ -100,6 +100,7 @@ func (c *Client) Clone() *Client {
 		Tags: c.context.Tags,
 		CustomData: c.context.CustomData,
 		User: c.context.User,
+		GetCustomGroupingKey: c.context.GetCustomGroupingKey,
 		identifier: c.context.identifier,
 	}
 
@@ -170,6 +171,16 @@ func (c *Client) User(u string) *Client {
 	return c
 }
 
+// CustomGroupingKeyFunction is a chainable option-setting method to provide a callback function
+// that returns a custom grouping key. This function is passed the original error and Raygun
+// payload just before it is serialized and sent to Raygun. This lets you control how errors
+// are grouped in your Raygun account. Returning null will result in Raygun grouping the errors
+// for you. This allows you to pick and choose which errors you want to control the grouping for.
+func (c *Client) CustomGroupingKeyFunction(getCustomGroupingKey func(error, PostData) string) *Client {
+	c.context.GetCustomGroupingKey = getCustomGroupingKey
+	return c
+}
+
 // HandleError sets up the error handling code. It needs to be called with
 //
 //   defer c.HandleError()
@@ -202,8 +213,17 @@ func (c *Client) HandleError() error {
 }
 
 // createPost creates the data structure that will be sent to Raygun.
-func (c *Client) createPost(err error, stack stackTrace) postData {
-	return newPostData(c.context, err, stack)
+func (c *Client) createPost(err error, stack StackTrace) PostData {
+	postData := newPostData(c.context, err, stack)
+	
+	if c.context.GetCustomGroupingKey != nil {
+	    customGroupingKey := c.context.GetCustomGroupingKey(err, postData)
+	    if customGroupingKey != "" {
+	        postData.Details.GroupingKey = &customGroupingKey
+	    }
+	}
+	
+	return postData
 }
 
 // Manually send a new error with the given message to Raygun. This will use the current execution stacktrace.
@@ -220,10 +240,10 @@ func (c *Client) CreateError(message string) error {
 func (c *Client) SendError(error error) error {
 	err := errors.New(error.Error())
 
-	var st stackTrace = nil
+	var st StackTrace = nil
 	if goerror, ok := error.(*goerrors.Error); ok {
-		st = make(stackTrace, 0, 0)
-		stack2struct.Parse(goerror.Stack(), &st)
+		st = make(StackTrace, 0, 0)
+		Parse(goerror.Stack(), &st)
 	} else {
 		st = currentStack()
 	}
@@ -234,7 +254,7 @@ func (c *Client) SendError(error error) error {
 
 // submit takes care of actually sending the error to Raygun unless the silent
 // option is set.
-func (c *Client) submit(post postData) error {
+func (c *Client) submit(post PostData) error {
 	if c.silent {
 		enc, _ := json.MarshalIndent(post, "", "\t")
 		fmt.Println(string(enc))
@@ -249,7 +269,7 @@ func (c *Client) submit(post postData) error {
   return c.submitCore(post)
 }
 
-func (c *Client) submitCore(post postData) error {
+func (c *Client) submitCore(post PostData) error {
 	json, err := json.Marshal(post)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to convert to JSON (%s): %#v", err.Error(), post)

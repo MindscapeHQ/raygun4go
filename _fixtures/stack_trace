@@ -1,11 +1,11 @@
 goroutine 5 [running]:
-ignored/line.foo
-ignored/line.go:1 +0x72
-ignored/line.foo
-ignored/line.go:1 +0x72
-ignored/line.foo
-ignored/line.go:1 +0x72
-foo/package1.method1·001()
-foo/package1/filename1.go:11 +0x72
-foo/package2.(*action).method2(0x208304420)
-foo/package2/filename2.go:22 +0x24
+main.func.001()
+main/stack2struct_test.go:13 +0x72
+github.com/smartystreets/goconvey/convey.(*action).Invoke(0x208304420)
+foo/path/github.com/smartystreets/goconvey/convey/registration.go:44 +0x24
+github.com/smartystreets/goconvey/convey.(*scope).visit(0x208326120, 0x2082d26c0)
+foo/path/github.com/smartystreets/goconvey/convey/scope.go:70 +0x1b8
+github.com/smartystreets/goconvey/convey.(*scope).visitNextChild(0x208326090, 0x2082d26c0)
+foo/path/github.com/smartystreets/goconvey/convey/scope.go:78 +0x76
+github.com/smartystreets/goconvey/convey.(*scope).visit(0x208326090, 0x2082d26c0)
+foo/path/github.com/smartystreets/goconvey/convey/scope.go:71 +0x1d6
