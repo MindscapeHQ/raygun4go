@@ -15,6 +15,7 @@
 //  }
 //
 // and from there you can do whatever you like with the accumulated data.
+
 package raygun4go
 
 import (
