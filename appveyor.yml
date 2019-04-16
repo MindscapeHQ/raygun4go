@@ -9,17 +9,21 @@ environment:
   GOPATH: c:\gopath
   matrix:
   - GOARCH: 386
-    GOVERSION: 1.2.2
+    GOVERSION: 1.9
   - GOARCH: amd64
-    GOVERSION: 1.2.2
+    GOVERSION: 1.9
   - GOARCH: 386
-    GOVERSION: 1.3
+    GOVERSION: 1.10
   - GOARCH: amd64
-    GOVERSION: 1.3
+    GOVERSION: 1.10
   - GOARCH: 386
-    GOVERSION: 1.4
+    GOVERSION: 1.11
   - GOARCH: amd64
-    GOVERSION: 1.4
+    GOVERSION: 1.11
+  - GOARCH: 386
+    GOVERSION: 1.12
+  - GOARCH: amd64
+    GOVERSION: 1.12
 
 
 clone_folder: c:\gopath\src\github.com\MindscapeHQ\raygun4go
