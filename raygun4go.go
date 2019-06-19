@@ -63,13 +63,13 @@ type Client struct {
 // contextInformation holds optional information on the context the error
 // occured in.
 type contextInformation struct {
-	Request    *http.Request                          // the request associated to the error
-	Version    string                                 // the version of the package
-	Tags       []string                               // tags that you would like to use to filter this error
-	CustomData interface{}                            // whatever you like Raygun to know about this error
-	User       string                                 // the user that saw the error
+	Request              *http.Request                // the request associated to the error
+	Version              string                       // the version of the package
+	Tags                 []string                     // tags that you would like to use to filter this error
+	CustomData           interface{}                  // whatever you like Raygun to know about this error
+	User                 string                       // the user that saw the error
 	GetCustomGroupingKey func(error, PostData) string // A function that takes the original error and Raygun payload and returns a key for grouping errors together in Raygun.
-	identifier string                                 // a unique identifier for the running process, automatically set by New()
+	identifier           string                       // a unique identifier for the running process, automatically set by New()
 }
 
 // raygunAPIEndpoint  holds the REST - JSON API Endpoint address
@@ -95,21 +95,21 @@ func New(appName, apiKey string) (c *Client, err error) {
 
 func (c *Client) Clone() *Client {
 	contextInfoClone := contextInformation{
-		Request: c.context.Request,
-		Version: c.context.Version,
-		Tags: c.context.Tags,
-		CustomData: c.context.CustomData,
-		User: c.context.User,
+		Request:              c.context.Request,
+		Version:              c.context.Version,
+		Tags:                 c.context.Tags,
+		CustomData:           c.context.CustomData,
+		User:                 c.context.User,
 		GetCustomGroupingKey: c.context.GetCustomGroupingKey,
-		identifier: c.context.identifier,
+		identifier:           c.context.identifier,
 	}
 
 	clientClone := &Client{
-		appName: c.appName,
-		apiKey: c.apiKey,
-		context: contextInfoClone,
-		silent: c.silent,
-		logToStdOut: c.logToStdOut,
+		appName:      c.appName,
+		apiKey:       c.apiKey,
+		context:      contextInfoClone,
+		silent:       c.silent,
+		logToStdOut:  c.logToStdOut,
 		asynchronous: c.asynchronous,
 	}
 	return clientClone
@@ -204,7 +204,7 @@ func (c *Client) HandleError() error {
 	}
 
 	post := c.createPost(err, currentStack())
-	err = c.submit(post)
+	err = c.Submit(post)
 
 	if c.logToStdOut && err != nil {
 		log.Println(err.Error())
@@ -215,14 +215,14 @@ func (c *Client) HandleError() error {
 // createPost creates the data structure that will be sent to Raygun.
 func (c *Client) createPost(err error, stack StackTrace) PostData {
 	postData := newPostData(c.context, err, stack)
-	
+
 	if c.context.GetCustomGroupingKey != nil {
-	    customGroupingKey := c.context.GetCustomGroupingKey(err, postData)
-	    if customGroupingKey != "" {
-	        postData.Details.GroupingKey = &customGroupingKey
-	    }
+		customGroupingKey := c.context.GetCustomGroupingKey(err, postData)
+		if customGroupingKey != "" {
+			postData.Details.GroupingKey = &customGroupingKey
+		}
 	}
-	
+
 	return postData
 }
 
@@ -231,7 +231,7 @@ func (c *Client) CreateError(message string) error {
 	err := errors.New(message)
 	post := c.createPost(err, currentStack())
 
-	return c.submit(post)
+	return c.Submit(post)
 }
 
 // Manually send the given error to Raygun.
@@ -249,24 +249,24 @@ func (c *Client) SendError(error error) error {
 	}
 
 	post := c.createPost(err, st)
-	return c.submit(post)
+	return c.Submit(post)
 }
 
-// submit takes care of actually sending the error to Raygun unless the silent
+// Submit takes care of actually sending the error to Raygun unless the silent
 // option is set.
-func (c *Client) submit(post PostData) error {
+func (c *Client) Submit(post PostData) error {
 	if c.silent {
 		enc, _ := json.MarshalIndent(post, "", "\t")
 		fmt.Println(string(enc))
 		return nil
 	}
 
-  if c.asynchronous {
-  	go c.submitCore(post)
-  	return nil
-  }
-  
-  return c.submitCore(post)
+	if c.asynchronous {
+		go c.submitCore(post)
+		return nil
+	}
+
+	return c.submitCore(post)
 }
 
 func (c *Client) submitCore(post PostData) error {
