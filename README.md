@@ -20,6 +20,7 @@ to Raygun via their REST-API.
 Include the package and then defer the HandleError-method as soon as possible
 in a context as global as possible. In webservers, this will probably be your
 request handling method, in all other programs it should be your main-method.
+It'll automatically capture any _panic_ and report it.
 Having found the right spot, just add the following example code:
 
 ```
@@ -39,6 +40,24 @@ print the resulting error message. If you remove the line
 raygun.Silent(true)
 ```
 the error will be sent to Raygun using your API-key.
+
+#### Manually sending errors
+
+To send errors manually you can use `CreateError(message string)`, or `SendError(error error)`. `CreateError` creates an
+error and immediately reports it, `SendError` immediately reports the error.
+
+```
+if err := raygun.CreateError("something bad happened"); err != nil {
+    log.Printf("failed to report error to Raygun: %v\n", err)
+}
+```
+
+```
+err := something.Do()
+if err := raygun.SendError(err); err != nil {
+    log.Printf("failed to report error to Raygun: %v\n", err)
+}
+```
 
 ### Options
 
