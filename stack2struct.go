@@ -23,6 +23,8 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	goerrors "github.com/go-errors/errors"
 )
 
 // stackTrace is the interface a target stack has to satisfy.
@@ -58,12 +60,19 @@ func Parse(trace []byte, stack stackTrace) {
 	}
 }
 
+// LoadGoErrorStack loads the strack trace (given as frames) into the given stack.
+func LoadGoErrorStack(frames []goerrors.StackFrame, stack stackTrace) {
+	for _, frame := range frames {
+		stack.AddEntry(frame.LineNumber, frame.Package, frame.File, frame.Name)
+	}
+}
+
 // extractPageName receives a trace line and extracts packageName and
 // methodName.
 func extractPackageName(line string) (packageName, methodName string) {
 	packagePath, packageNameAndFunction := splitAtLastSlash(line)
 	parts := strings.Split(packageNameAndFunction, ".")
-	
+
 	if len(parts) > 1 {
 		packageName = parts[0]
 		if len(packagePath) > 0 {
@@ -73,7 +82,7 @@ func extractPackageName(line string) (packageName, methodName string) {
 	} else {
 		methodName = parts[0]
 	}
-	
+
 	return
 }
 
@@ -84,13 +93,13 @@ func extractLineNumberAndFile(line string) (lineNumber int, fileName string) {
 	fileAndLine = removeSpaceAndSuffix(fileAndLine)
 	parts := strings.Split(fileAndLine, ":")
 
-    lineNumber = 0
+	lineNumber = 0
 
-    if len(parts) >= 2 {
-	    numberAsString := parts[1]
-	    number, _ := strconv.ParseUint(numberAsString, 10, 32)
-	    lineNumber = int(number)
-    }
+	if len(parts) >= 2 {
+		numberAsString := parts[1]
+		number, _ := strconv.ParseUint(numberAsString, 10, 32)
+		lineNumber = int(number)
+	}
 
 	fileName = parts[0]
 	return lineNumber, fileName
@@ -110,7 +119,7 @@ func splitAtLastSlash(line string) (left, right string) {
 func removeSpaceAndSuffix(line string) string {
 	parts := strings.Split(line, " ")
 	if len(parts) <= 1 {
-	    return line
+		return line
 	}
 	return strings.Join(parts[:len(parts)-1], " ")
 }

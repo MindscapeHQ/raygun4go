@@ -243,7 +243,7 @@ func (c *Client) SendError(error error) error {
 	var st StackTrace = nil
 	if goerror, ok := error.(*goerrors.Error); ok {
 		st = make(StackTrace, 0, 0)
-		Parse(goerror.Stack(), &st)
+		LoadGoErrorStack(goerror.StackFrames(), &st)
 	} else {
 		st = currentStack()
 	}
