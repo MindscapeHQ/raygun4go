@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	goerrors "github.com/go-errors/errors"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -52,13 +53,13 @@ func TestStack2Struct(t *testing.T) {
 		}
 
 		So(len(stack), ShouldEqual, 5)
-		
+
 		firstEntry := stack[0]
 		So(firstEntry.lineNumber, ShouldEqual, expected[0].lineNumber)
 		So(firstEntry.packageName, ShouldEqual, expected[0].packageName)
 		So(firstEntry.fileName, ShouldEqual, expected[0].fileName)
 		So(firstEntry.methodName, ShouldEqual, expected[0].methodName)
-		
+
 		secondEntry := stack[1]
 		So(secondEntry.lineNumber, ShouldEqual, expected[1].lineNumber)
 		So(secondEntry.packageName, ShouldEqual, expected[1].packageName)
@@ -68,9 +69,9 @@ func TestStack2Struct(t *testing.T) {
 		So(stack[0], ShouldResemble, expected[0])
 		So(stack[1], ShouldResemble, expected[1])
 	})
-	
+
 	Convey("#ParseWithNoClassName", t, func() {
-	    buf, _ := ioutil.ReadFile("_fixtures/stack_trace_with_no_class_name")
+		buf, _ := ioutil.ReadFile("_fixtures/stack_trace_with_no_class_name")
 
 		stack := make(testStack, 0, 0)
 		Parse(buf, &stack)
@@ -83,7 +84,7 @@ func TestStack2Struct(t *testing.T) {
 		}
 
 		So(len(stack), ShouldEqual, 1)
-		
+
 		firstEntry := stack[0]
 		So(firstEntry.lineNumber, ShouldEqual, expected[0].lineNumber)
 		So(firstEntry.packageName, ShouldEqual, expected[0].packageName)
@@ -92,9 +93,9 @@ func TestStack2Struct(t *testing.T) {
 
 		So(stack[0], ShouldResemble, expected[0])
 	})
-	
+
 	Convey("#ParseWithNoMemoryAddress", t, func() {
-	    buf, _ := ioutil.ReadFile("_fixtures/stack_trace_with_no_memory_address")
+		buf, _ := ioutil.ReadFile("_fixtures/stack_trace_with_no_memory_address")
 
 		stack := make(testStack, 0, 0)
 		Parse(buf, &stack)
@@ -107,7 +108,7 @@ func TestStack2Struct(t *testing.T) {
 		}
 
 		So(len(stack), ShouldEqual, 1)
-		
+
 		firstEntry := stack[0]
 		So(firstEntry.lineNumber, ShouldEqual, expected[0].lineNumber)
 		So(firstEntry.packageName, ShouldEqual, expected[0].packageName)
@@ -116,5 +117,46 @@ func TestStack2Struct(t *testing.T) {
 
 		So(stack[0], ShouldResemble, expected[0])
 	})
-	
+
+	Convey("#LoadGoErrorStack", t, func() {
+		testFrames := []goerrors.StackFrame{
+			{File: "stack2struct_test.go",
+				LineNumber: 13,
+				Name:       "func.001()",
+				Package:    "main"},
+			{File: "registration.go",
+				LineNumber: 44,
+				Name:       "(*action).Invoke(0x208304420)",
+				Package:    "github.com/smartystreets/goconvey/convey"},
+		}
+
+		stack := make(testStack, 0, 0)
+		LoadGoErrorStack(testFrames, &stack)
+
+		expected := testStack{
+			testElement{13,
+				"main",
+				"stack2struct_test.go",
+				"func.001()"},
+			testElement{44,
+				"github.com/smartystreets/goconvey/convey",
+				"registration.go",
+				"(*action).Invoke(0x208304420)"},
+		}
+
+		firstEntry := stack[0]
+		So(firstEntry.lineNumber, ShouldEqual, expected[0].lineNumber)
+		So(firstEntry.packageName, ShouldEqual, expected[0].packageName)
+		So(firstEntry.fileName, ShouldEqual, expected[0].fileName)
+		So(firstEntry.methodName, ShouldEqual, expected[0].methodName)
+
+		secondEntry := stack[1]
+		So(secondEntry.lineNumber, ShouldEqual, expected[1].lineNumber)
+		So(secondEntry.packageName, ShouldEqual, expected[1].packageName)
+		So(secondEntry.fileName, ShouldEqual, expected[1].fileName)
+		So(secondEntry.methodName, ShouldEqual, expected[1].methodName)
+
+		So(stack[0], ShouldResemble, expected[0])
+		So(stack[1], ShouldResemble, expected[1])
+	})
 }
