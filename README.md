@@ -34,7 +34,7 @@ defer raygun.HandleError()
 where ``appName`` is the name of your app and ``apiKey`` is your
 Raygun-API-key. If your program runs into a panic now (which you can easily
 test by adding ``panic("foo")`` after the call to ``defer``), the handler will
-print the resulting error message.
+send the error to Raygun.
 
 #### Manually sending errors
 
