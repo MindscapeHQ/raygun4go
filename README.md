@@ -28,18 +28,13 @@ raygun, err := raygun4go.New("appName", "apiKey")
 if err != nil {
   log.Println("Unable to create Raygun client:", err.Error())
 }
-raygun.Silent(true)
 defer raygun.HandleError()
 ```
 
 where ``appName`` is the name of your app and ``apiKey`` is your
 Raygun-API-key. If your program runs into a panic now (which you can easily
 test by adding ``panic("foo")`` after the call to ``defer``), the handler will
-print the resulting error message. If you remove the line
-```
-raygun.Silent(true)
-```
-the error will be sent to Raygun using your API-key.
+print the resulting error message.
 
 #### Manually sending errors
 
