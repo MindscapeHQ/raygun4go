@@ -98,6 +98,10 @@ func (s *StackTrace) AddEntry(lineNumber int, packageName, fileName, methodName 
 	*s = append(*s, StackTraceElement{lineNumber, packageName, fileName, methodName})
 }
 
+type StackTraceReader interface {
+	GetStackTrace() StackTrace
+}
+
 // requestData holds all information on the request from the context
 type RequestData struct {
 	HostName    string            `json:"hostName"`
