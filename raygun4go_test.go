@@ -173,6 +173,18 @@ func TestClient(t *testing.T) {
 			c.apiKey = "key"
 			c.CreateError("Test: See if this works with Raygun")
 		})
+
+		Convey("#CreateErrorWithStackTrace", func() {
+			ts := raygunEndpointStub()
+			defer ts.Close()
+			raygunEndpoint = ts.URL
+			c, _ := New("app", "key")
+			c.Silent(false)
+			c.apiKey = "key"
+			var customST StackTrace
+			customST.AddEntry(42, "packageName", "fileName.go", "MethodName")
+			c.CreateErrorWithStackTrace("Test: Using custom stack trace with Raygun", customST)
+		})
 	})
 }
 
