@@ -22,16 +22,17 @@ func TestClient(t *testing.T) {
 
 		Convey("#New", func() {
 			c, err := New("", "test")
-			So(c, ShouldEqual, nil)
-			So(err, ShouldNotEqual, nil)
+			So(c, ShouldBeNil)
+			So(err, ShouldNotBeNil)
 
 			c, err = New("test", "")
-			So(c, ShouldEqual, nil)
-			So(err, ShouldNotEqual, nil)
+			So(c, ShouldBeNil)
+			So(err, ShouldNotBeNil)
 
 			c, err = New("test", "test")
+			So(c, ShouldNotBeNil)
 			So(c, ShouldHaveSameTypeAs, &Client{})
-			So(err, ShouldEqual, nil)
+			So(err, ShouldBeNil)
 		})
 
 		Convey("#Clone", func() {
@@ -126,9 +127,9 @@ func TestClient(t *testing.T) {
 		})
 
 		Convey("#CustomGroupingKeyFunction", func() {
-			So(c.context.GetCustomGroupingKey, ShouldEqual, nil)
+			So(c.context.GetCustomGroupingKey, ShouldBeNil)
 			c.CustomGroupingKeyFunction(func(error, PostData) string { return "customGroupingKey" })
-			So(c.context.GetCustomGroupingKey, ShouldNotEqual, nil)
+			So(c.context.GetCustomGroupingKey, ShouldNotBeNil)
 		})
 
 		Convey("#LogToStdOut", func() {

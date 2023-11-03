@@ -42,7 +42,7 @@ func Current(stack stackTrace) {
 // Parse loads the stack trace (given as trace) into the given stack.
 // See Current() on how to obtain a stack trace.
 func Parse(trace []byte, stack stackTrace) {
-	lines := strings.Split(string(trace), "\n")
+	lines := strings.Split(strings.ReplaceAll(string(trace), "\r\n", "\n"), "\n")
 
 	var lineNumber int
 	var fileName, packageName, methodName string
