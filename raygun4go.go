@@ -5,30 +5,31 @@
 // of data being sent is configurable.
 //
 // Basic example:
-//   raygun, err := raygun4go.New("appName", "apiKey")
-//   if err != nil {
-//     log.Println("Unable to create Raygun client:", err.Error())
-//   }
-//   defer raygun.HandleError()
+//
+//	raygun, err := raygun4go.New("appName", "apiKey")
+//	if err != nil {
+//	  log.Println("Unable to create Raygun client:", err.Error())
+//	}
+//	defer raygun.HandleError()
 //
 // This will send the error message together with a stack trace to Raygun.
 //
 // However, raygun4go really starts to shine if used in a webserver context.
 // By calling
 //
-//   raygun.Request(*http.Request)
+//	raygun.Request(*http.Request)
 //
 // you can set a request to be analyzed in case of an error. If an error
 // occurs, this will send the request details to Raygun, including
 //
-//   * hostname
-//   * url
-//   * http method
-//   * ip adress
-//   * url parameters
-//   * POSTed form fields
-//   * headers
-//   * cookies
+//   - hostname
+//   - url
+//   - http method
+//   - ip adress
+//   - url parameters
+//   - POSTed form fields
+//   - headers
+//   - cookies
 //
 // giving you a lot more leverage on your errors than the plain error message
 // could provide you with.
@@ -183,7 +184,7 @@ func (c *Client) CustomGroupingKeyFunction(getCustomGroupingKey func(error, Post
 
 // HandleError sets up the error handling code. It needs to be called with
 //
-//   defer c.HandleError()
+//	defer c.HandleError()
 //
 // to handle all panics inside the calling function and all calls made from it.
 // Be sure to call this in your main function or (if it is webserver) in your
@@ -234,6 +235,19 @@ func (c *Client) CreateError(message string) error {
 	return c.Submit(post)
 }
 
+// Manually send an error to Raygun with a custom message and a custom stack trace.
+// This is particularly useful in scenarios where the default system stack trace is not relevant or sufficient.
+//
+// message: The error message to be reported.
+// st:      A custom stack trace to be associated with the error.
+// Users can manually construct a StackTrace using the AddEntry method.
+func (c *Client) CreateErrorWithStackTrace(message string, st StackTrace) error {
+	err := errors.New(message)
+	post := c.createPost(err, st)
+
+	return c.Submit(post)
+}
+
 // Manually send the given error to Raygun.
 // If the given error is a "github.com/go-errors/errors".Error, then its stacktrace will be used in the Raygun report.
 // For other errors, the current execution stacktrace is used in the Raygun report.
@@ -242,13 +256,14 @@ func (c *Client) SendError(error error) error {
 
 	var st StackTrace = nil
 	if goerror, ok := error.(*goerrors.Error); ok {
-		st = make(StackTrace, 0, 0)
+		st = make(StackTrace, 0)
 		LoadGoErrorStack(goerror.StackFrames(), &st)
 	} else {
 		st = currentStack()
 	}
 
 	post := c.createPost(err, st)
+
 	return c.Submit(post)
 }
 

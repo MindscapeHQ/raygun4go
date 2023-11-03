@@ -2,9 +2,9 @@ package raygun4go
 
 import (
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -72,9 +72,9 @@ func TestRequestData(t *testing.T) {
 
 func TestErrorData(t *testing.T) {
 	Convey("#NewErrorData", t, func() {
-		trace, _ := ioutil.ReadFile("_fixtures/stack_trace")
+		trace, _ := os.ReadFile("_fixtures/stack_trace")
 		e := errors.New("test error")
-		stack := make(StackTrace, 0, 0)
+		stack := make(StackTrace, 0)
 		Parse(trace, &stack)
 
 		d := newErrorData(e, stack[3:])

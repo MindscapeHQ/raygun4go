@@ -76,7 +76,7 @@ func TestClient(t *testing.T) {
 			c.Silent(true)
 			c.LogToStdOut(true)
 			c.Asynchronous(true)
-			c.CustomGroupingKeyFunction(func(error, PostData)string{return "customGroupingKey"})
+			c.CustomGroupingKeyFunction(func(error, PostData) string { return "customGroupingKey" })
 
 			So(clone.silent, ShouldNotResemble, c.silent)
 			So(clone.logToStdOut, ShouldNotResemble, c.logToStdOut)
@@ -124,10 +124,10 @@ func TestClient(t *testing.T) {
 			c.Silent(true)
 			So(c.silent, ShouldBeTrue)
 		})
-		
+
 		Convey("#CustomGroupingKeyFunction", func() {
 			So(c.context.GetCustomGroupingKey, ShouldEqual, nil)
-		    c.CustomGroupingKeyFunction(func(error, PostData)string{return "customGroupingKey"})
+			c.CustomGroupingKeyFunction(func(error, PostData) string { return "customGroupingKey" })
 			So(c.context.GetCustomGroupingKey, ShouldNotEqual, nil)
 		})
 
@@ -155,7 +155,7 @@ func TestClient(t *testing.T) {
 			c.Silent(true)
 			c.Request(r)
 			c.apiKey = "key"
-			c.CustomGroupingKeyFunction(func(error, PostData)string{return "customGroupingKey"})
+			c.CustomGroupingKeyFunction(func(error, PostData) string { return "customGroupingKey" })
 			c.context.Version = "goconvey"
 			c.context.Tags = []string{"golang", "test"}
 			c.context.CustomData = map[string]string{"foo": "bar"}
