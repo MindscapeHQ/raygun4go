@@ -3,7 +3,6 @@ package raygun4go
 import (
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"net/url"
 	"testing"
 
@@ -12,11 +11,24 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+// This key is required to send error reports to the Raygun dashboard.
+// This value is only relevant if integrationTest (below) is set to true.
+var apiKey = "key"
+
+// integrationTest determines the mode of testing.
+// If set to true:
+//   - Test exceptions will be sent to Raygun using the provided apiKey.
+//
+// If set to false:
+//   - Test exceptions won't be sent to Raygun, instead their payloads will
+//     be printed to the console for local validation.
+var integrationTest = false
+
 func TestClient(t *testing.T) {
 	Convey("Client", t, func() {
-		c, _ := New("app", "key")
+		c, _ := New("app", apiKey)
 		So(c.appName, ShouldEqual, "app")
-		So(c.apiKey, ShouldEqual, "key")
+		So(c.apiKey, ShouldEqual, apiKey)
 		So(c.context.Request, ShouldBeNil)
 		So(c.context.Identifier(), ShouldHaveSameTypeAs, uuid.New())
 
@@ -66,8 +78,7 @@ func TestClient(t *testing.T) {
 			So(clone.context.identifier, ShouldResemble, c.context.identifier)
 			So(clone.context.GetCustomGroupingKey, ShouldResemble, c.context.GetCustomGroupingKey)
 
-			// After cloning, make some changes to the original client
-			// to assert that they aren't picked up in the clone
+			// After cloning, make some changes to the original client to assert that they aren't picked up in the clone
 			c.Tags([]string{"Expected"})
 			c.CustomData("bar")
 			newRequest, _ := http.NewRequest("POST", "https://my.api.io", nil)
@@ -153,60 +164,75 @@ func TestClient(t *testing.T) {
 				"fizz": []string{"buzz", "buzz2"},
 			}
 			r.Header.Add("Cookie", "cookie1=value1; cookie2=value2")
-			c.Silent(true)
+			c.Silent(!integrationTest)
 			c.Request(r)
-			c.apiKey = "key"
 			c.CustomGroupingKeyFunction(func(error, PostData) string { return "customGroupingKey" })
 			c.context.Version = "goconvey"
 			c.context.Tags = []string{"golang", "test"}
 			c.context.CustomData = map[string]string{"foo": "bar"}
 			c.context.User = "Test User"
+
 			defer c.HandleError()
-			panic("Test: See if this works with Raygun")
+			panic("Test unhandled error")
 		})
 
 		Convey("#CreateError", func() {
-			ts := raygunEndpointStub()
-			defer ts.Close()
-			raygunEndpoint = ts.URL
-			c, _ := New("app", "key")
-			c.Silent(false)
-			c.apiKey = "key"
-			c.CreateError("Test: See if this works with Raygun")
+			c.Silent(!integrationTest)
+			c.context.Version = "goconvey"
+			c.context.Tags = []string{"golang", "test"}
+			c.context.CustomData = map[string]string{"foo": "bar"}
+			c.context.User = "Test User"
+
+			err := c.CreateError("Test CreateError")
+			So(err, ShouldBeNil)
 		})
 
 		Convey("#CreateErrorWithStackTrace", func() {
-			ts := raygunEndpointStub()
-			defer ts.Close()
-			raygunEndpoint = ts.URL
-			c, _ := New("app", "key")
-			c.Silent(false)
-			c.apiKey = "key"
+			c.Silent(!integrationTest)
+			c.context.Version = "goconvey"
+			c.context.Tags = []string{"golang", "test"}
+			c.context.CustomData = map[string]string{"foo": "bar"}
+			c.context.User = "Test User"
+
 			var customST StackTrace
 			customST.AddEntry(42, "packageName", "fileName.go", "MethodName")
-			c.CreateErrorWithStackTrace("Test: Using custom stack trace with Raygun", customST)
+
+			err := c.CreateErrorWithStackTrace("Test CreateErrorWithStackTrace", customST)
+			So(err, ShouldBeNil)
+		})
+
+		Convey("After testing", func() {
+			fmt.Println()
+			fmt.Println("==================================================================")
+			if integrationTest {
+				fmt.Println("Please check your Raygun dashboard to validate the three errors. You should expect:")
+			} else {
+				fmt.Println("Please validate the three error payloads above. You should expect:")
+			}
+			fmt.Println("1. An unhandled error with the following details:")
+			fmt.Println("   - URL: http://www.example.com?foo=bar&fizz[]=buzz&fizz[]=buzz2")
+			fmt.Println("   - Remote Address: 1.2.3.4")
+			fmt.Println("   - Post Form: foo=bar, fizz=buzz, fizz=buzz2")
+			fmt.Println("   - Headers: Cookie=cookie1=value1; cookie2=value2")
+			fmt.Println("   - Custom Grouping Key: customGroupingKey")
+			fmt.Println("   - Version: goconvey")
+			fmt.Println("   - Tags: golang, test")
+			fmt.Println("   - Custom Data: foo=bar")
+			fmt.Println("   - User: Test User")
+			fmt.Println("2. An error created with CreateError with the following details:")
+			fmt.Println("   - Version: goconvey")
+			fmt.Println("   - Tags: golang, test")
+			fmt.Println("   - Custom Data: foo=bar")
+			fmt.Println("   - User: Test User")
+			fmt.Println("   - Error message: Test CreateError")
+			fmt.Println("3. An error created with CreateErrorWithStackTrace with the following details:")
+			fmt.Println("   - Version: goconvey")
+			fmt.Println("   - Tags: golang, test")
+			fmt.Println("   - Custom Data: foo=bar")
+			fmt.Println("   - User: Test User")
+			fmt.Println("   - Error message: Test CreateErrorWithStackTrace")
+			fmt.Println("   - Custom Stack Trace: packageName.fileName.go:42 MethodName")
+			fmt.Println("==================================================================")
 		})
 	})
-}
-
-func raygunEndpointStub() *httptest.Server {
-	return httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-
-			if req.Method != "POST" || req.RequestURI != "/entries" {
-				fmt.Println("raygunEndpointStub: URI not implemented")
-				http.Error(w, "Not Found", http.StatusNotFound)
-				return
-			}
-
-			// 403 Invalid API Key
-			// The value specified in the header X-ApiKey did not match with a user.
-			if req.Header.Get("X-ApiKey") == "" {
-				w.WriteHeader(http.StatusForbidden)
-				return
-			}
-			// 202 OK - Message accepted.
-			w.WriteHeader(http.StatusAccepted)
-		}))
 }
