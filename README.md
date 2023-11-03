@@ -1,7 +1,6 @@
 # Raygun4Go
-[![Coverage](http://gocover.io/_badge/github.com/MindscapeHQ/raygun4go)](http://gocover.io/github.com/MindscapeHQ/raygun4go)
-[![GoDoc](https://godoc.org/github.com/MindscapeHQ/raygun4go?status.svg)](http://godoc.org/github.com/MindscapeHQ/raygun4go)
-[![GoReportcard](http://goreportcard.com/badge/MindscapeHQ/raygun4go)](http://goreportcard.com/report/MindscapeHQ/raygun4go)
+[![GoDoc](https://godoc.org/github.com/MindscapeHQ/raygun4go?status.svg)](https://godoc.org/github.com/MindscapeHQ/raygun4go)
+[![GoReportcard](https://goreportcard.com/badge/MindscapeHQ/raygun4go)](https://goreportcard.com/report/MindscapeHQ/raygun4go)
 
 Raygun4Go adds Raygun-based error handling to your Golang code. It catches all occuring errors, extracts as much information as possible, and sends the error to Raygun via our REST-API.
 
