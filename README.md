@@ -36,6 +36,8 @@ To send errors manually, you can use `CreateError(message string)`, `SendError(e
 - `SendError` immediately reports the error with its stack trace if it's of type `"github.com/go-errors/errors".Error`. Otherwise, it uses the current execution stack trace.
 - `CreateErrorWithStackTrace` allows you to manually send an error with a custom stack trace.
 
+---
+
 Example of `CreateError`:
 ```go
 if err := raygun.CreateError("something bad happened"); err != nil {
@@ -59,6 +61,8 @@ if err := raygun.CreateErrorWithStackTrace("something bad happened", st); err !=
     log.Printf("failed to report error to Raygun: %v\n", err)
 }
 ```
+
+---
 
 ### Options
 
