@@ -235,12 +235,17 @@ func (c *Client) CreateError(message string) error {
 	return c.Submit(post)
 }
 
-// Manually send an error to Raygun with a custom message and a custom stack trace.
-// This is particularly useful in scenarios where the default system stack trace is not relevant or sufficient.
+// Manually send an error to Raygun with a custom message and a custom stacktrace.
+// This can be useful when the default system stack trace is not relevant or sufficient.
 //
-// message: The error message to be reported.
-// st:      A custom stack trace to be associated with the error.
-// Users can manually construct a StackTrace using the AddEntry method.
+// The message parameter is the error message to be reported.
+// The st parameter is a custom StackTrace to be associated with the error.
+//
+// To construct a StackTrace, use the AddEntry method of the StackTrace type.
+// For example:
+//
+//	st := make(raygun4go.StackTrace, 0)
+//	st.AddEntry(42, "main", "example.go", "exampleFunc")
 func (c *Client) CreateErrorWithStackTrace(message string, st StackTrace) error {
 	err := errors.New(message)
 	post := c.createPost(err, st)

@@ -94,13 +94,13 @@ type StackTraceElement struct {
 // Users can manually build a StackTrace by appending StackTraceElement instances to it.
 type StackTrace []StackTraceElement
 
-// AddEntry appends a new entry to the StackTrace. This method is primarily used by internal parsing functions
-// but can also be utilized to manually construct a StackTrace.
+// AddEntry appends a new entry to the StackTrace. This method is primarily used by internal parsing
+// functions but can also be used to manually construct a StackTrace.
 //
-// lineNumber:   The line number where the call occurred.
-// packageName:  The package that contains the file of the call.
-// fileName:     The file where the call occurred.
-// methodName:   The method or function name where the call occurred.
+//   - lineNumber:   The line number where the call occurred.
+//   - packageName:  The package that contains the file of the call.
+//   - fileName:     The file where the call occurred.
+//   - methodName:   The method or function name where the call occurred.
 func (s *StackTrace) AddEntry(lineNumber int, packageName, fileName, methodName string) {
 	*s = append(*s, StackTraceElement{lineNumber, packageName, fileName, methodName})
 }
