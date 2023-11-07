@@ -1,7 +1,7 @@
 package raygun4go
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
 
 	goerrors "github.com/go-errors/errors"
@@ -36,9 +36,9 @@ func TestStack2Struct(t *testing.T) {
 	})
 
 	Convey("#Parse", t, func() {
-		buf, _ := ioutil.ReadFile("_fixtures/stack_trace")
+		buf, _ := os.ReadFile("_fixtures/stack_trace")
 
-		stack := make(testStack, 0, 0)
+		stack := make(testStack, 0)
 		Parse(buf, &stack)
 
 		expected := testStack{
@@ -71,9 +71,9 @@ func TestStack2Struct(t *testing.T) {
 	})
 
 	Convey("#ParseWithNoClassName", t, func() {
-		buf, _ := ioutil.ReadFile("_fixtures/stack_trace_with_no_class_name")
+		buf, _ := os.ReadFile("_fixtures/stack_trace_with_no_class_name")
 
-		stack := make(testStack, 0, 0)
+		stack := make(testStack, 0)
 		Parse(buf, &stack)
 
 		expected := testStack{
@@ -95,9 +95,9 @@ func TestStack2Struct(t *testing.T) {
 	})
 
 	Convey("#ParseWithNoMemoryAddress", t, func() {
-		buf, _ := ioutil.ReadFile("_fixtures/stack_trace_with_no_memory_address")
+		buf, _ := os.ReadFile("_fixtures/stack_trace_with_no_memory_address")
 
-		stack := make(testStack, 0, 0)
+		stack := make(testStack, 0)
 		Parse(buf, &stack)
 
 		expected := testStack{
@@ -130,7 +130,7 @@ func TestStack2Struct(t *testing.T) {
 				Package:    "github.com/smartystreets/goconvey/convey"},
 		}
 
-		stack := make(testStack, 0, 0)
+		stack := make(testStack, 0)
 		LoadGoErrorStack(testFrames, &stack)
 
 		expected := testStack{

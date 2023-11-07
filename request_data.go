@@ -76,7 +76,7 @@ func newErrorData(err error, s StackTrace) ErrorData {
 // currentStack returns the current stack. However, it omits the first 3 entries
 // to avoid cluttering the trace with raygun4go-specific calls.
 func currentStack() StackTrace {
-	s := make(StackTrace, 0, 0)
+	s := make(StackTrace, 0)
 	Current(&s)
 	return s[3:]
 }
@@ -90,10 +90,17 @@ type StackTraceElement struct {
 	MethodName  string `json:"methodName"`
 }
 
-// stackTrace is the stack the trace will be parsed into.
+// StackTrace represents a series of stack trace elements, each detailing a level of the call stack.
+// Users can manually build a StackTrace by appending StackTraceElement instances to it.
 type StackTrace []StackTraceElement
 
-// AddEntry is the method used by stack2struct to dump parsed elements.
+// AddEntry appends a new entry to the StackTrace. This method is primarily used by internal parsing
+// functions but can also be used to manually construct a StackTrace.
+//
+//   - lineNumber:   The line number where the call occurred.
+//   - packageName:  The package that contains the file of the call.
+//   - fileName:     The file where the call occurred.
+//   - methodName:   The method or function name where the call occurred.
 func (s *StackTrace) AddEntry(lineNumber int, packageName, fileName, methodName string) {
 	*s = append(*s, StackTraceElement{lineNumber, packageName, fileName, methodName})
 }
